@@ -1,0 +1,20 @@
+import axios from 'axios'
+
+const api = axios.create({
+  baseURL: import.meta.env.VITE_TMDB_BASE_URL,
+  params: {
+    api_key: import.meta.env.VITE_TMDB_API_KEY,
+    language: 'pt-BR'
+  }
+})
+
+// Interceptor para tratamento de erros
+api.interceptors.response.use(
+  response => response,
+  error => {
+    console.error('API Error:', error)
+    return Promise.reject(error)
+  }
+)
+
+export default api
