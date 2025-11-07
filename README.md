@@ -27,7 +27,7 @@ Plataforma web especializada em filmes de terror, desenvolvida com Vue.js 3 e in
 - npm install 
 
 3. Configure as váriaveis de ambiente:
-- cp .env.example .env
+- cp .env
 
 4. Adicione sua API key do TMDB no arquivo `.env`:
 - Acesse: https://www.themoviedb.org/settings/api
