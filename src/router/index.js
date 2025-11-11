@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-import HomeView from '@/views/HomeView.vue';
+import HomeView from '@/views/layout/HomeView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,7 +17,7 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('@/views/LoginView.vue'),
+      component: () => import('@/views/layout/LoginView.vue'),
       meta: {
         title: 'Login - Sede do Medo',
         requiresAgeConfirmation: true,
@@ -27,7 +27,7 @@ const router = createRouter({
     {
       path: '/movie/:id',
       name: 'movie-detail',
-      component: () => import('@/views/MovieDetailView.vue'),
+      component: () => import('@/views/movie/MovieDetailView.vue'),
       meta: {
         title: 'Detalhes do Filme - Sede do Medo',
         requiresAgeConfirmation: true,
@@ -36,7 +36,7 @@ const router = createRouter({
     {
       path: '/favorites',
       name: 'favorites',
-      component: () => import('@/views/FavoritesView.vue'),
+      component: () => import('@/views/user/FavoritesView.vue'),
       meta: {
         title: 'Meus Favoritos - Sede do Medo',
         requiresAgeConfirmation: true,
@@ -45,7 +45,7 @@ const router = createRouter({
     {
       path: '/search',
       name: 'search',
-      component: () => import('@/views/SearchView.vue'),
+      component: () => import('@/views/layout/SearchView.vue'),
       meta: {
         title: 'Buscar Filmes - Sede do Medo',
         requiresAgeConfirmation: true,
@@ -54,7 +54,7 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'profile',
-      component: () => import('@/views/ProfileView.vue'),
+      component: () => import('@/views/user/ProfileView.vue'),
       meta: {
         title: 'Meu Perfil - Sede do Medo',
         requiresAuth: true,
@@ -64,7 +64,7 @@ const router = createRouter({
     {
       path: '/watchlist',
       name: 'watchlist',
-      component: () => import('@/views/WatchlistView.vue'),
+      component: () => import('@/views/user/WatchlistView.vue'),
       meta: {
         title: 'Minha Watchlist - Sede do Medo',
         requiresAuth: true,
@@ -74,7 +74,7 @@ const router = createRouter({
     {
       path: '/my-ratings',
       name: 'my-ratings',
-      component: () => import('@/views/MyRatingsView.vue'),
+      component: () => import('@/views/user/MyRatingsView.vue'),
       meta: {
         title: 'Minhas Avaliações - Sede do Medo',
         requiresAuth: true,
@@ -84,7 +84,7 @@ const router = createRouter({
     {
       path: '/:pathMatch(.*)*',
       name: 'not-found',
-      component: () => import('@/views/NotFoundView.vue'),
+      component: () => import('@/views/layout/NotFoundView.vue'),
       meta: {
         title: '404 - Página Não Encontrada',
       },
@@ -104,11 +104,14 @@ const router = createRouter({
   },
 });
 
+// Navigation Guard
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
 
+  // Atualizar título da página
   document.title = to.meta.title || 'Sede do Medo';
 
+  // Adicionar meta description
   let metaDescription = document.querySelector('meta[name="description"]');
   if (!metaDescription) {
     metaDescription = document.createElement('meta');
@@ -117,8 +120,10 @@ router.beforeEach(async (to, from, next) => {
   }
   metaDescription.content = 'Descubra, explore e avalie os melhores filmes de terror. Plataforma completa com trailers, sinopses e informações detalhadas.';
 
+  // Verificar se rota requer autenticação
   if (to.meta.requiresAuth) {
     if (!authStore.isAuthenticated) {
+      // Redirecionar para login
       next({
         name: 'login',
         query: { redirect: to.fullPath },
@@ -127,9 +132,10 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
-
+  // Verificar se é rota apenas para convidados (login)
   if (to.meta.guestOnly) {
     if (authStore.isAuthenticated) {
+      // Redirecionar para home se já estiver logado
       next({ name: 'home' });
       return;
     }
@@ -138,7 +144,9 @@ router.beforeEach(async (to, from, next) => {
   next();
 });
 
+// After navigation
 router.afterEach(() => {
+  // Scroll to top on route change
   window.scrollTo(0, 0);
 });
 
