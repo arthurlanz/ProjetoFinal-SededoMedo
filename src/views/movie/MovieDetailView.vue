@@ -250,10 +250,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { useMovieStore } from '@/stores/movie'
 import { useFavorites } from '@/composables/useFavorites'
 import { getImageUrl, getBackdropUrl } from '@/plugins/axios'
-import LoadingScreen from '@/components/LoadingScreen.vue'
-import MovieCard from '@/components/MovieCard.vue'
-import TrailerModal from '@/components/TrailerModal.vue'
-import MovieRating from '@/components/MovieRating.vue'
+import LoadingScreen from '@/components/layout/LoadingScreen.vue'
+import MovieCard from '@/components/movie/MovieCard.vue'
+import TrailerModal from '@/components/modal/TrailerModal.vue'
+import MovieRating from '@/components/movie/MovieRating.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -620,7 +620,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  
+
 }
 
 .movie-detail__info-item strong {
