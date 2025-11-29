@@ -15,6 +15,14 @@ export function useFavorites() {
     favoritesStore.toggleFavorite(movie);
   };
 
+  const addToFavorites = (movie) => {
+    favoritesStore.addToFavorites(movie);
+  };
+
+  const removeFromFavorites = (movieId) => {
+    favoritesStore.removeFromFavorites(movieId);
+  };
+
   const addToHistory = (movie) => {
     favoritesStore.addToHistory(movie);
   };
@@ -33,6 +41,8 @@ export function useFavorites() {
     hasHistory,
     isFavorite,
     toggleFavorite,
+    addToFavorites,
+    removeFromFavorites,
     addToHistory,
     clearHistory,
   };

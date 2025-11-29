@@ -24,32 +24,35 @@ export const useFavoritesStore = defineStore('favorites', () => {
     }
   };
 
-  const syncWithTMDB = async () => {
+  // 🆕 NOVA FUNÇÃO: Carregar favoritos da API e SUBSTITUIR os locais
+  const loadFromTMDB = async () => {
     const authStore = useAuthStore();
     if (authStore.isAuthenticated) {
       try {
+        console.log('📥 Carregando favoritos da API TMDB...');
         const tmdbFavorites = await authStore.getFavoriteMovies();
-        const mergedFavorites = [...state.favorites];
 
-        tmdbFavorites.forEach(movie => {
-          if (!mergedFavorites.find(f => f.id === movie.id)) {
-            mergedFavorites.push({
-              id: movie.id,
-              title: movie.title,
-              poster_path: movie.poster_path,
-              vote_average: movie.vote_average,
-              release_date: movie.release_date,
-              addedAt: new Date().toISOString(),
-            });
-          }
-        });
+        // SUBSTITUI os favoritos locais pelos da API (não faz merge)
+        state.favorites = tmdbFavorites.map(movie => ({
+          id: movie.id,
+          title: movie.title,
+          poster_path: movie.poster_path,
+          vote_average: movie.vote_average,
+          release_date: movie.release_date,
+          addedAt: new Date().toISOString(),
+        }));
 
-        state.favorites = mergedFavorites;
         localStorage.setItem('horror-favorites', JSON.stringify(state.favorites));
+        console.log(`✅ ${state.favorites.length} favoritos carregados da API`);
       } catch (error) {
-        console.error('Erro ao sincronizar favoritos:', error);
+        console.error('❌ Erro ao carregar favoritos da API:', error);
       }
     }
+  };
+
+  // Mantida para compatibilidade (mas não usada mais)
+  const syncWithTMDB = async () => {
+    await loadFromTMDB();
   };
 
   const isFavorite = (movieId) => {
@@ -71,8 +74,11 @@ export const useFavoritesStore = defineStore('favorites', () => {
       localStorage.setItem('horror-favorites', JSON.stringify(state.favorites));
 
       const authStore = useAuthStore();
-      if (authStore.isAuthenticated) {
-        await authStore.toggleFavoriteTMDB(movie.id, true);
+      if (authStore.isAuthenticated && authStore.user?.id) {
+        const success = await authStore.toggleFavoriteTMDB(movie.id, true);
+        if (success) {
+          console.log('✅ Favorito salvo no TMDB');
+        }
       }
     }
   };
@@ -97,7 +103,6 @@ export const useFavoritesStore = defineStore('favorites', () => {
 
   const addToHistory = (movie) => {
     state.history = state.history.filter((m) => m.id !== movie.id);
-
     state.history.unshift({
       id: movie.id,
       title: movie.title,
@@ -117,6 +122,15 @@ export const useFavoritesStore = defineStore('favorites', () => {
     localStorage.removeItem('horror-history');
   };
 
+  // 🆕 NOVA FUNÇÃO: Limpar tudo (favoritos + histórico)
+  const clearAll = () => {
+    state.favorites = [];
+    state.history = [];
+    localStorage.removeItem('horror-favorites');
+    localStorage.removeItem('horror-history');
+    console.log('🧹 Favoritos e histórico limpos');
+  };
+
   loadFromStorage();
 
   return {
@@ -129,5 +143,7 @@ export const useFavoritesStore = defineStore('favorites', () => {
     addToHistory,
     clearHistory,
     syncWithTMDB,
+    loadFromTMDB,
+    clearAll,
   };
 });

@@ -31,10 +31,8 @@ export const useAuthStore = defineStore('auth', () => {
   const validateWithLogin = async (username, password) => {
     state.loading = true;
     state.error = null;
-
     try {
       const requestToken = await createRequestToken();
-
       const response = await api.post('authentication/token/validate_with_login', {
         username,
         password,
@@ -45,6 +43,7 @@ export const useAuthStore = defineStore('auth', () => {
         state.requestToken = response.data.request_token;
         return true;
       }
+
       return false;
     } catch (err) {
       state.error = 'Usuário ou senha inválidos';
@@ -66,6 +65,7 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.setItem('tmdb_session_id', state.sessionId);
         return true;
       }
+
       return false;
     } catch (err) {
       console.error('Erro ao criar sessão:', err);
@@ -107,7 +107,6 @@ export const useAuthStore = defineStore('auth', () => {
   const login = async (username, password) => {
     state.loading = true;
     state.error = null;
-
     try {
       const validated = await validateWithLogin(username, password);
       if (!validated) {
@@ -121,6 +120,12 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       await fetchAccountDetails();
+
+      // 🆕 CARREGAR FAVORITOS DA API APÓS LOGIN
+      console.log('✅ Login bem-sucedido! Carregando favoritos da API...');
+      const { useFavoritesStore } = await import('@/stores/favorites');
+      const favoritesStore = useFavoritesStore();
+      await favoritesStore.loadFromTMDB();
 
       return true;
     } catch (err) {
@@ -143,12 +148,19 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (err) {
       console.error('Erro ao fazer logout:', err);
     } finally {
+      // Limpar estado de autenticação
       state.user = null;
       state.sessionId = null;
       state.requestToken = null;
       state.isAuthenticated = false;
       localStorage.removeItem('tmdb_session_id');
       localStorage.removeItem('tmdb_user');
+
+      // 🆕 LIMPAR TODOS OS FAVORITOS E HISTÓRICO DO NAVEGADOR
+      console.log('🧹 Limpando favoritos e histórico do navegador...');
+      const { useFavoritesStore } = await import('@/stores/favorites');
+      const favoritesStore = useFavoritesStore();
+      favoritesStore.clearAll();
     }
   };
 
@@ -160,9 +172,14 @@ export const useAuthStore = defineStore('auth', () => {
       try {
         state.sessionId = savedSessionId;
         state.user = JSON.parse(savedUser);
-
         await fetchAccountDetails();
         state.isAuthenticated = true;
+
+        // 🆕 SINCRONIZAR FAVORITOS AO RESTAURAR SESSÃO
+        const { useFavoritesStore } = await import('@/stores/favorites');
+        const favoritesStore = useFavoritesStore();
+        await favoritesStore.loadFromTMDB();
+
         return true;
       } catch (err) {
         console.error('Sessão inválida ou expirada', err);
@@ -190,6 +207,16 @@ export const useAuthStore = defineStore('auth', () => {
   };
 
   const toggleFavoriteTMDB = async (movieId, favorite) => {
+    if (!state.user || !state.user.id) {
+      console.error('❌ Usuário não está definido');
+      return false;
+    }
+
+    if (!state.sessionId) {
+      console.error('❌ Session ID não está definido');
+      return false;
+    }
+
     try {
       const response = await api.post(
         `account/${state.user.id}/favorite`,
@@ -204,9 +231,10 @@ export const useAuthStore = defineStore('auth', () => {
           },
         }
       );
+
       return response.data.success;
     } catch (err) {
-      console.error('Erro ao atualizar favorito:', err);
+      console.error('❌ Erro ao atualizar favorito no TMDB:', err);
       return false;
     }
   };
