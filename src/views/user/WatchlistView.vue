@@ -42,8 +42,8 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
-import MovieGrid from '@/components/MovieGrid.vue';
-import LoadingScreen from '@/components/LoadingScreen.vue';
+import MovieGrid from '@/components/movie/MovieGrid.vue';
+import LoadingScreen from '@/components/layout/LoadingScreen.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();

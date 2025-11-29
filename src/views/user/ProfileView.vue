@@ -136,8 +136,8 @@
 import { ref, onMounted } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 import { useAuthStore } from '@/stores/auth';
-import MovieCard from '@/components/MovieCard.vue';
-import LoadingScreen from '@/components/LoadingScreen.vue';
+import MovieCard from '@/components/movie/MovieCard.vue';
+import LoadingScreen from '@/components/layout/LoadingScreen.vue';
 
 const { user, logout } = useAuth();
 const authStore = useAuthStore();

@@ -109,7 +109,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { getImageUrl } from '@/plugins/axios'
-import LoadingScreen from '@/components/LoadingScreen.vue'
+import LoadingScreen from '@/components/layout/LoadingScreen.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
