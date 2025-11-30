@@ -8,16 +8,17 @@
         class="app-header"
         :class="{
           'app-header--scrolled': isScrolled,
-          'app-header--transparent': isHomePage || isDetailPage,
+          'app-header--transparent': isHomePage || isDetailPage || isFilmsPage || isSeriesPage,
         }"
       >
         <div class="app-header__container">
           <div class="app-header__left">
-            <router-link to="/" class="app-header__logo"> SEDE DO MEDO </router-link>
+            <router-link to="/" class="app-header__logo">SEDE DO MEDO</router-link>
 
             <nav class="app-header__nav">
               <router-link to="/" class="app-header__nav-link">Início</router-link>
-              <router-link to="/search" class="app-header__nav-link">Filmes</router-link>
+              <router-link to="/films" class="app-header__nav-link">Filmes</router-link>
+              <router-link to="/series" class="app-header__nav-link">Séries</router-link>
               <router-link to="/watchlist" class="app-header__nav-link">Minha Lista</router-link>
             </nav>
           </div>
@@ -67,36 +68,64 @@
 
         <Transition name="fade">
           <div v-if="mobileMenuOpen" class="app-header__mobile">
-            <router-link to="/" @click="mobileMenuOpen = false" class="app-header__mobile-link"
-              >Início</router-link
-            >
+            <router-link to="/" @click="mobileMenuOpen = false" class="app-header__mobile-link">
+              Início
+            </router-link>
             <router-link
-              to="/search"
+              to="/films"
               @click="mobileMenuOpen = false"
               class="app-header__mobile-link"
-              >Filmes</router-link
             >
+              Filmes
+            </router-link>
             <router-link
-              to="/favorites"
+              to="/series"
               @click="mobileMenuOpen = false"
               class="app-header__mobile-link"
-              >Minha Lista</router-link
             >
+              Séries
+            </router-link>
+            <router-link
+              to="/watchlist"
+              @click="mobileMenuOpen = false"
+              class="app-header__mobile-link"
+            >
+              Minha Lista
+            </router-link>
+
             <template v-if="isAuthenticated">
+              <div class="app-header__mobile-divider"></div>
               <router-link
                 to="/profile"
                 @click="mobileMenuOpen = false"
                 class="app-header__mobile-link"
-                >Conta</router-link
               >
+                Minha Conta
+              </router-link>
+              <router-link
+                to="/my-ratings"
+                @click="mobileMenuOpen = false"
+                class="app-header__mobile-link"
+              >
+                Minhas Avaliações
+              </router-link>
+              <router-link
+                to="/favorites"
+                @click="mobileMenuOpen = false"
+                class="app-header__mobile-link"
+              >
+                Favoritos
+              </router-link>
             </template>
+
             <router-link
               v-else
               to="/login"
               @click="mobileMenuOpen = false"
               class="app-header__mobile-link"
-              >Entrar</router-link
             >
+              Entrar
+            </router-link>
           </div>
         </Transition>
       </header>
@@ -105,7 +134,7 @@
         class="app-main"
         :class="{
           'app-main--full': isLoginPage,
-          'app-main--home': isHomePage,
+          'app-main--home': isHomePage || isFilmsPage || isSeriesPage,
           'app-main--detail': isDetailPage,
         }"
       >
@@ -154,13 +183,14 @@
             </div>
             <div class="app-footer__column">
               <a href="#">Centro de ajuda</a>
-              <router-link to="/search">Filmes</router-link>
+              <router-link to="/films">Filmes</router-link>
+              <router-link to="/series">Séries</router-link>
               <a href="#">Termos de uso</a>
-              <a href="#">Entre em contato</a>
             </div>
             <div class="app-footer__column">
               <router-link to="/profile">Conta</router-link>
-              <router-link to="/favorites">Minha lista</router-link>
+              <router-link to="/watchlist">Minha Lista</router-link>
+              <router-link to="/favorites">Favoritos</router-link>
               <a href="#">Privacidade</a>
             </div>
             <div class="app-footer__column">
@@ -199,6 +229,8 @@ const { isAuthenticated, user } = useAuth()
 const authStore = useAuthStore()
 const isHomePage = computed(() => route.path === '/')
 const isDetailPage = computed(() => route.name === 'movie-detail')
+const isFilmsPage = computed(() => route.path === '/films')
+const isSeriesPage = computed(() => route.path === '/series')
 const ageConfirmed = ref(false)
 const mobileMenuOpen = ref(false)
 const isScrolled = ref(false)
@@ -222,7 +254,6 @@ onMounted(async () => {
 
   await authStore.restoreSession()
 
-  // Add scroll listener
   window.addEventListener('scroll', handleScroll)
 })
 
@@ -239,15 +270,14 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   z-index: 100;
-  background: rgb(20, 20, 20); /* PADRÃO: SÓLIDO */
+  background: rgb(20, 20, 20);
   transition: background 0.4s ease;
 }
 
-/* Header transparente APENAS na home */
 .app-header--transparent {
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 10%, transparent);
 }
-/* Header sólido ao rolar (em qualquer página) */
+
 .app-header--scrolled {
   background: rgb(20, 20, 20) !important;
 }
@@ -400,13 +430,18 @@ onUnmounted(() => {
   color: #fff;
 }
 
+.app-header__mobile-divider {
+  height: 1px;
+  background: #2a2a2a;
+  margin: 0.5rem 0;
+}
+
 /* ==================== MAIN ==================== */
 .app-main {
   min-height: 100vh;
-  padding-top: 70px; /* ✅ Padrão para páginas normais */
+  padding-top: 70px;
 }
 
-/* ✅ SEM padding-top para home e detail */
 .app-main--home,
 .app-main--detail {
   padding-top: 0 !important;

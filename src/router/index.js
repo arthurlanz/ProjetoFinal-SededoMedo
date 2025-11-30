@@ -52,6 +52,25 @@ const router = createRouter({
       },
     },
     {
+      path: '/films',
+      name: 'films',
+      component: () => import('@/views/catalog/FilmsView.vue'),
+      meta: {
+        title: 'Filmes de Terror - Sede do Medo',
+        requiresAgeConfirmation: true,
+      },
+    },
+    {
+      path: '/series',
+      name: 'series',
+      component: () => import('@/views/catalog/SeriesView.vue'),
+      meta: {
+        title: 'Séries de Terror - Sede do Medo',
+        requiresAgeConfirmation: true,
+      },
+    },
+
+    {
       path: '/profile',
       name: 'profile',
       component: () => import('@/views/user/ProfileView.vue'),

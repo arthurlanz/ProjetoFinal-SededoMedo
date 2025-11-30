@@ -2,32 +2,32 @@ import { reactive, computed } from 'vue';
 import { defineStore } from 'pinia';
 import api from '@/plugins/axios';
 
-export const useMovieStore = defineStore('movie', () => {
+export const useSeriesStore = defineStore('series', () => {
   const state = reactive({
-    movies: [],
-    trendingMovies: [],
-    popularMovies: [],
-    topRatedMovies: [],
-    selectedMovie: null,
+    series: [],
+    trendingSeries: [],
+    popularSeries: [],
+    topRatedSeries: [],
+    selectedSeries: null,
     loading: false,
     error: null,
     currentPage: 1,
     totalPages: 1,
   });
 
-  const movies = computed(() => state.movies);
-  const trendingMovies = computed(() => state.trendingMovies);
-  const popularMovies = computed(() => state.popularMovies);
-  const topRatedMovies = computed(() => state.topRatedMovies);
-  const selectedMovie = computed(() => state.selectedMovie);
+  const series = computed(() => state.series);
+  const trendingSeries = computed(() => state.trendingSeries);
+  const popularSeries = computed(() => state.popularSeries);
+  const topRatedSeries = computed(() => state.topRatedSeries);
+  const selectedSeries = computed(() => state.selectedSeries);
   const loading = computed(() => state.loading);
   const error = computed(() => state.error);
 
-  const getHorrorMovies = async (page = 1) => {
+  const getHorrorSeries = async (page = 1) => {
     state.loading = true;
     state.error = null;
     try {
-      const response = await api.get('discover/movie', {
+      const response = await api.get('discover/tv', {
         params: {
           language: 'pt-BR',
           page,
@@ -35,40 +35,40 @@ export const useMovieStore = defineStore('movie', () => {
           sort_by: 'popularity.desc',
         },
       });
-      state.movies = response.data.results;
+      state.series = response.data.results;
       state.currentPage = response.data.page;
       state.totalPages = response.data.total_pages;
     } catch (err) {
-      state.error = 'Erro ao carregar filmes de terror';
+      state.error = 'Erro ao carregar séries de terror';
       console.error(err);
     } finally {
       state.loading = false;
     }
   };
 
-  const getTrendingHorrorMovies = async () => {
+  const getTrendingHorrorSeries = async () => {
     state.loading = true;
     try {
-      const response = await api.get('trending/movie/week', {
+      const response = await api.get('trending/tv/week', {
         params: {
           language: 'pt-BR',
         },
       });
-      state.trendingMovies = response.data.results.filter((movie) =>
-        movie.genre_ids.includes(27)
+      state.trendingSeries = response.data.results.filter((show) =>
+        show.genre_ids.includes(27)
       );
     } catch (err) {
-      state.error = 'Erro ao carregar filmes em alta';
+      state.error = 'Erro ao carregar séries em alta';
       console.error(err);
     } finally {
       state.loading = false;
     }
   };
 
-  const getPopularHorrorMovies = async () => {
+  const getPopularHorrorSeries = async () => {
     state.loading = true;
     try {
-      const response = await api.get('discover/movie', {
+      const response = await api.get('discover/tv', {
         params: {
           language: 'pt-BR',
           with_genres: 27,
@@ -76,19 +76,19 @@ export const useMovieStore = defineStore('movie', () => {
           page: 1,
         },
       });
-      state.popularMovies = response.data.results.slice(0, 10);
+      state.popularSeries = response.data.results.slice(0, 10);
     } catch (err) {
-      state.error = 'Erro ao carregar filmes populares';
+      state.error = 'Erro ao carregar séries populares';
       console.error(err);
     } finally {
       state.loading = false;
     }
   };
 
-  const getTopRatedHorrorMovies = async () => {
+  const getTopRatedHorrorSeries = async () => {
     state.loading = true;
     try {
-      const response = await api.get('discover/movie', {
+      const response = await api.get('discover/tv', {
         params: {
           language: 'pt-BR',
           with_genres: 27,
@@ -97,33 +97,33 @@ export const useMovieStore = defineStore('movie', () => {
           page: 1,
         },
       });
-      state.topRatedMovies = response.data.results.slice(0, 10);
+      state.topRatedSeries = response.data.results.slice(0, 10);
     } catch (err) {
-      state.error = 'Erro ao carregar filmes melhor avaliados';
+      state.error = 'Erro ao carregar séries melhor avaliadas';
       console.error(err);
     } finally {
       state.loading = false;
     }
   };
 
-  const getMovieDetails = async (id) => {
+  const getSeriesDetails = async (id) => {
     state.loading = true;
     state.error = null;
     try {
-      const [movieResponse, creditsResponse, videosResponse] = await Promise.all([
-        api.get(`movie/${id}`, {
+      const [seriesResponse, creditsResponse, videosResponse] = await Promise.all([
+        api.get(`tv/${id}`, {
           params: { language: 'pt-BR' },
         }),
-        api.get(`movie/${id}/credits`, {
+        api.get(`tv/${id}/credits`, {
           params: { language: 'pt-BR' },
         }),
-        api.get(`movie/${id}/videos`, {
+        api.get(`tv/${id}/videos`, {
           params: { language: 'pt-BR' },
         }),
       ]);
 
-      state.selectedMovie = {
-        ...movieResponse.data,
+      state.selectedSeries = {
+        ...seriesResponse.data,
         cast: creditsResponse.data.cast.slice(0, 10),
         crew: creditsResponse.data.crew,
         videos: videosResponse.data.results,
@@ -132,16 +132,16 @@ export const useMovieStore = defineStore('movie', () => {
         ),
       };
     } catch (err) {
-      state.error = 'Erro ao carregar detalhes do filme';
+      state.error = 'Erro ao carregar detalhes da série';
       console.error(err);
     } finally {
       state.loading = false;
     }
   };
 
-  const getSimilarMovies = async (id) => {
+  const getSimilarSeries = async (id) => {
     try {
-      const response = await api.get(`movie/${id}/similar`, {
+      const response = await api.get(`tv/${id}/similar`, {
         params: {
           language: 'pt-BR',
           page: 1,
@@ -149,45 +149,43 @@ export const useMovieStore = defineStore('movie', () => {
       });
       return response.data.results.slice(0, 6);
     } catch (err) {
-      console.error('Erro ao carregar filmes similares:', err);
+      console.error('Erro ao carregar séries similares:', err);
       return [];
     }
   };
 
-  const searchMovies = async (query, page = 1) => {
+  const searchSeries = async (query, page = 1) => {
     if (!query.trim()) {
-      state.movies = [];
+      state.series = [];
       return;
     }
 
     state.loading = true;
     state.error = null;
     try {
-      const response = await api.get('search/movie', {
+      const response = await api.get('search/tv', {
         params: {
           language: 'pt-BR',
           query,
           page,
-          with_genres: 27,
         },
       });
-      state.movies = response.data.results.filter((movie) =>
-        movie.genre_ids.includes(27)
+      state.series = response.data.results.filter((show) =>
+        show.genre_ids.includes(27)
       );
       state.currentPage = response.data.page;
       state.totalPages = response.data.total_pages;
     } catch (err) {
-      state.error = 'Erro ao buscar filmes';
+      state.error = 'Erro ao buscar séries';
       console.error(err);
     } finally {
       state.loading = false;
     }
   };
 
-  // ✅ NOVO MÉTODO: Descobrir filmes com parâmetros customizados
-  const discoverMovies = async (params) => {
+  const discoverSeries = async (params) => {
     try {
-      const response = await api.get('discover/movie', {
+      const response = await api.get('discover/tv', {
         params: {
           language: 'pt-BR',
           ...params,
@@ -195,31 +193,31 @@ export const useMovieStore = defineStore('movie', () => {
       });
       return response.data.results;
     } catch (err) {
-      console.error('Erro ao descobrir filmes:', err);
+      console.error('Erro ao descobrir séries:', err);
       return [];
     }
   };
 
-  const clearSelectedMovie = () => {
-    state.selectedMovie = null;
+  const clearSelectedSeries = () => {
+    state.selectedSeries = null;
   };
 
   return {
-    movies,
-    trendingMovies,
-    popularMovies,
-    topRatedMovies,
-    selectedMovie,
+    series,
+    trendingSeries,
+    popularSeries,
+    topRatedSeries,
+    selectedSeries,
     loading,
     error,
-    getHorrorMovies,
-    getTrendingHorrorMovies,
-    getPopularHorrorMovies,
-    getTopRatedHorrorMovies,
-    getMovieDetails,
-    getSimilarMovies,
-    searchMovies,
-    discoverMovies, // ✅ Adicionado ao return
-    clearSelectedMovie,
+    getHorrorSeries,
+    getTrendingHorrorSeries,
+    getPopularHorrorSeries,
+    getTopRatedHorrorSeries,
+    getSeriesDetails,
+    getSimilarSeries,
+    searchSeries,
+    discoverSeries,
+    clearSelectedSeries,
   };
 });
