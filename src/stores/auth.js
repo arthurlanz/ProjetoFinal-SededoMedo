@@ -88,8 +88,8 @@ export const useAuthStore = defineStore('auth', () => {
         avatar: response.data.avatar?.tmdb?.avatar_path
           ? `https://image.tmdb.org/t/p/w185${response.data.avatar.tmdb.avatar_path}`
           : response.data.avatar?.gravatar?.hash
-          ? `https://www.gravatar.com/avatar/${response.data.avatar.gravatar.hash}`
-          : null,
+            ? `https://www.gravatar.com/avatar/${response.data.avatar.gravatar.hash}`
+            : null,
         includeAdult: response.data.include_adult,
         iso_639_1: response.data.iso_639_1,
         iso_3166_1: response.data.iso_3166_1,
@@ -239,29 +239,65 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
-  const getWatchlist = async (page = 1) => {
+  const getWatchlist = async () => {
+    if (!state.user || !state.sessionId) {
+      console.log('⚠️ Usuário não autenticado')
+      return []
+    }
+
     try {
-      const response = await api.get(`account/${state.user.id}/watchlist/movies`, {
-        params: {
-          session_id: state.sessionId,
-          language: 'pt-BR',
-          page,
-        },
-      });
-      return response.data.results;
+      console.log('📥 Carregando watchlist (filmes + séries) da API TMDB...')
+
+      const [moviesResponse, tvResponse] = await Promise.all([
+        api.get(`account/${state.user.id}/watchlist/movies`, {
+          params: {
+            session_id: state.sessionId,
+            language: 'pt-BR',
+            sort_by: 'created_at.desc',
+          },
+        }),
+        api.get(`account/${state.user.id}/watchlist/tv`, {
+          params: {
+            session_id: state.sessionId,
+            language: 'pt-BR',
+            sort_by: 'created_at.desc',
+          },
+        })
+      ])
+
+      // Combinar filmes e séries, adaptando séries para formato de filme
+      const movies = moviesResponse.data.results
+      const series = tvResponse.data.results.map(show => ({
+        ...show,
+        title: show.name,
+        release_date: show.first_air_date,
+        media_type: 'tv'
+      }))
+
+      const allItems = [...movies, ...series]
+      console.log(`✅ ${allItems.length} itens na watchlist carregados (${movies.length} filmes + ${series.length} séries)`)
+
+      return allItems
     } catch (err) {
-      console.error('Erro ao buscar watchlist:', err);
-      return [];
+      console.error('❌ Erro ao buscar watchlist:', err)
+      return []
     }
   };
 
-  const toggleWatchlist = async (movieId, watchlist) => {
+  const toggleWatchlist = async (mediaId, watchlist, mediaType = 'movie') => {
+    if (!state.user || !state.sessionId) {
+      console.error('❌ Usuário não autenticado')
+      return false
+    }
+
     try {
+      console.log(`${watchlist ? '➕' : '➖'} ${watchlist ? 'Adicionando' : 'Removendo'} ${mediaType} ${mediaId} ${watchlist ? 'na' : 'da'} watchlist...`)
+
       const response = await api.post(
         `account/${state.user.id}/watchlist`,
         {
-          media_type: 'movie',
-          media_id: movieId,
+          media_type: mediaType,
+          media_id: mediaId,
           watchlist,
         },
         {
@@ -269,11 +305,13 @@ export const useAuthStore = defineStore('auth', () => {
             session_id: state.sessionId,
           },
         }
-      );
-      return response.data.success;
+      )
+
+      console.log(`✅ Watchlist atualizada com sucesso!`)
+      return response.data.success
     } catch (err) {
-      console.error('Erro ao atualizar watchlist:', err);
-      return false;
+      console.error('❌ Erro ao atualizar watchlist:', err)
+      return false
     }
   };
 
