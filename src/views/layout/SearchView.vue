@@ -1,66 +1,51 @@
 <template>
   <div class="search-view">
     <div class="container">
-      <header class="search-view__header">
-        <h1 class="search-view__title">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="m21 21-4.35-4.35"/>
-          </svg>
-          Buscar Filmes
-        </h1>
-      </header>
-
-      <!-- Search Bar -->
-      <div class="search-view__search">
-        <SearchBar @search="handleSearch" @clear="handleClear" />
-      </div>
-
-      <!-- Results Info -->
-      <div v-if="searchQuery" class="search-view__info">
+      <!-- Info de resultados - quando há busca ativa -->
+      <div v-if="searchQuery" class="search-view__results-info">
         <p v-if="!loading">
-          {{ movies.length }} {{ movies.length === 1 ? 'resultado' : 'resultados' }}
-          para "<strong>{{ searchQuery }}</strong>"
+          {{ movies.length }} {{ movies.length === 1 ? 'resultado' : 'resultados' }} para "<strong>{{ searchQuery }}</strong>"
         </p>
         <p v-else>Buscando...</p>
       </div>
 
       <!-- Loading -->
-      <LoadingScreen :loading="loading" text="Procurando filmes..." />
+      <LoadingScreen v-if="loading" message="Buscando filmes..." />
 
       <!-- Results -->
-      <div v-if="!loading && searchQuery">
-        <MovieGrid
-          :movies="movies"
-          :view-mode="viewMode"
-          :loading="loading"
-          :has-more="false"
-        />
+      <MovieGrid
+        v-else-if="movies.length > 0 && searchQuery"
+        :movies="movies"
+        :view-mode="viewMode"
+        :loading="loading"
+        :has-more="false"
+      />
+
+      <!-- No Results -->
+      <div v-else-if="searchQuery && !loading && movies.length === 0" class="search-view__empty">
+        <div class="search-view__icon">🔍</div>
+        <h2>Nenhum resultado encontrado</h2>
+        <p>Tente buscar por outro termo ou filme diferente</p>
       </div>
 
-      <!-- Initial State -->
+      <!-- Initial State - só quando não há busca -->
       <div v-if="!searchQuery && !loading" class="search-view__initial">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="m21 21-4.35-4.35"/>
-        </svg>
+        <div class="search-view__icon">🎬</div>
         <h2>Encontre seu próximo pesadelo</h2>
-        <p>Digite o título de um filme, ator ou diretor para começar</p>
+        <p>Use a barra de pesquisa no topo da página para começar</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { ref, computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useMovieStore } from '@/stores/movie';
-import SearchBar from '@/components/layout/SearchBar.vue';
 import MovieGrid from '@/components/movie/MovieGrid.vue';
 import LoadingScreen from '@/components/layout/LoadingScreen.vue';
 
 const route = useRoute();
-const router = useRouter();
 const movieStore = useMovieStore();
 
 const searchQuery = ref('');
@@ -69,109 +54,85 @@ const viewMode = ref(localStorage.getItem('view-mode') || 'grid');
 const movies = computed(() => movieStore.movies);
 const loading = computed(() => movieStore.loading);
 
-const handleSearch = async (query) => {
-  searchQuery.value = query;
-  await movieStore.searchMovies(query);
-
-  // Update URL
-  router.push({ name: 'search', query: { q: query } });
-};
-
-const handleClear = () => {
-  searchQuery.value = '';
-  movieStore.movies = [];
-  router.push({ name: 'search' });
-};
-
-onMounted(() => {
-  const query = route.query.q;
-  if (query) {
-    searchQuery.value = query;
-    movieStore.searchMovies(query);
-  }
-});
+watch(
+  () => route.query.q,
+  async (newQuery) => {
+    if (newQuery && newQuery.trim()) {
+      searchQuery.value = newQuery;
+      await movieStore.searchMovies(newQuery);
+    } else {
+      searchQuery.value = '';
+      movieStore.movies = [];
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <style scoped>
+.search-view {
+  min-height: 100vh;
+  background: rgb(20, 20, 20);
+  padding: 4rem 0 4rem;
+}
+
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
+  padding: 0 4%;
 }
 
-.search-view__header {
-  text-align: center;
+.search-view__results-info {
   margin-bottom: 2rem;
-  padding-top: 2rem;
-}
-
-.search-view__title {
-  display: inline-flex;
-  align-items: center;
-  gap: 1rem;
-  font-size: 3rem;
-  font-weight: 900;
-  color: #dc2626;
-  text-shadow: 0 0 30px rgba(220, 38, 38, 0.3);
-}
-
-.search-view__title svg {
-  width: 48px;
-  height: 48px;
-}
-
-.search-view__search {
-  max-width: 700px;
-  margin: 0 auto 2rem;
-}
-
-.search-view__info {
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background: rgba(220, 38, 38, 0.1);
-  border: 1px solid rgba(220, 38, 38, 0.3);
-  border-radius: 0.5rem;
+  padding: 1rem 1.5rem;
+  background: rgba(229, 9, 20, 0.1);
+  border: 1px solid rgba(229, 9, 20, 0.3);
+  border-radius: 4px;
   text-align: center;
-  color: #d1d5db;
+  color: #e5e5e5;
+  font-size: 1rem;
 }
 
-.search-view__info strong {
-  color: #dc2626;
+.search-view__results-info strong {
+  color: #e50914;
   font-weight: 700;
 }
 
+.search-view__empty,
 .search-view__initial {
   text-align: center;
-  padding: 6rem 2rem;
-  color: #6b7280;
+  padding: 8rem 2rem;
+  color: #808080;
 }
 
-.search-view__initial svg {
-  width: 100px;
-  height: 100px;
-  margin: 0 auto 2rem;
-  color: #374151;
+.search-view__icon {
+  font-size: 6rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.3;
 }
 
+.search-view__empty h2,
 .search-view__initial h2 {
   font-size: 2rem;
-  font-weight: 800;
+  font-weight: 700;
   margin-bottom: 1rem;
-  color: #9ca3af;
+  color: #fff;
 }
 
+.search-view__empty p,
 .search-view__initial p {
   font-size: 1.125rem;
+  color: #808080;
 }
 
 @media (max-width: 768px) {
-  .search-view__title {
-    font-size: 2rem;
+  .search-view__initial h2,
+  .search-view__empty h2 {
+    font-size: 1.5rem;
   }
 
-  .search-view__title svg {
-    width: 36px;
-    height: 36px;
+  .search-view__icon {
+    font-size: 4rem;
   }
 }
 </style>

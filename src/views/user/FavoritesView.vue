@@ -154,10 +154,16 @@ const confirmClearHistory = () => {
 </script>
 
 <style scoped>
+.favorites {
+  min-height: 100vh;
+  background: rgb(20, 20, 20);
+  padding: 5rem 0 4rem;
+}
+
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 0 4%;
 }
 
 .favorites__header {

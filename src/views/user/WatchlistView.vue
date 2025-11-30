@@ -6,7 +6,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
           </svg>
-          Minha Lista de Desejos
+          Minha Lista de Interesses
         </h1>
         <p class="watchlist-view__subtitle">
           {{ movies.length }} {{ movies.length === 1 ? 'filme' : 'filmes' }} para assistir
@@ -68,10 +68,16 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.watchlist-view {
+  min-height: 100vh;
+  background: rgb(20, 20, 20);
+  padding: 5rem 0 4rem;
+}
+
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
+  padding: 0 4%;
 }
 
 .watchlist-view__header {

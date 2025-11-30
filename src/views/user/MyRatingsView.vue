@@ -149,10 +149,16 @@ onMounted(async () => {
 })
 </script>
 <style scoped>
+.ratings-view {
+  min-height: 100vh;
+  background: rgb(20, 20, 20);
+  padding: 4rem 0 4rem;
+}
+
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
+  padding: 0 4%;
 }
 
 .ratings-view__header {

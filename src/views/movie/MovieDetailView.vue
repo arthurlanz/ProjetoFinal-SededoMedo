@@ -92,16 +92,11 @@
           <!-- Info -->
           <div class="movie-detail__info">
             <button @click="goBack" class="movie-detail__back">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <line x1="19" y1="12" x2="5" y2="12" />
-                <polyline points="12 19 5 12 12 5" />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
               Voltar
             </button>
 
@@ -364,6 +359,9 @@ onMounted(() => {
 })
 </script>
 <style scoped>
+.movie-detail__content {
+  background: rgb(20, 20, 20);
+}
 .container {
   max-width: 1400px;
   margin: 0 auto;
@@ -372,22 +370,33 @@ onMounted(() => {
 
 .movie-detail__hero {
   position: relative;
-  height: 60vh;
-  min-height: 400px;
+  height: 80vh; /* ✅ Aumentado */
+  min-height: 500px;
   overflow: hidden;
-  margin-bottom: -200px;
+  margin-top: -70px; /* ✅ COMPENSA O HEADER (igual à home) */
+  margin-bottom: -250px; /* ✅ Ajustado */
 }
+
 
 .movie-detail__backdrop {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center top;
 }
 
 .movie-detail__backdrop-overlay {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.7) 50%, #000000 100%);
+  inset: 0; /* ✅ Cobre toda a área */
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 30%,
+    rgba(20, 20, 20, 0.3) 50%,
+    rgba(20, 20, 20, 0.8) 70%,
+    rgba(20, 20, 20, 0.95) 90%,
+    rgb(20, 20, 20) 100%
+  ); /* ✅ Gradiente suave do topo ao fundo */
 }
 
 .movie-detail__container {
@@ -492,7 +501,7 @@ onMounted(() => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: transparent;
+  background: rgb(20, 20, 20);
   border: 1px solid rgba(220, 38, 38, 0.3);
   border-radius: 0.5rem;
   color: #dc2626;
@@ -503,7 +512,7 @@ onMounted(() => {
 }
 
 .movie-detail__back:hover {
-  background: rgba(220, 38, 38, 0.1);
+  background: rgb(30, 30, 30);
   border-color: #dc2626;
 }
 
