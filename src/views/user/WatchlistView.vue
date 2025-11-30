@@ -3,13 +3,11 @@
     <div class="container">
       <header class="watchlist-view__header">
         <h1 class="watchlist-view__title">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-          </svg>
+          <font-awesome-icon :icon="['fas', 'bookmark']" />
           Minha Lista de Interesses
         </h1>
         <p class="watchlist-view__subtitle">
-          {{ movies.length }} {{ movies.length === 1 ? 'filme' : 'filmes' }} para assistir
+          {{ movies.length }} {{ movies.length === 1 ? 'item' : 'itens' }} para assistir
         </p>
       </header>
 
@@ -25,13 +23,12 @@
       </div>
 
       <div v-if="!loading && movies.length === 0" class="watchlist-view__empty">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-        </svg>
+        <font-awesome-icon :icon="['fas', 'bookmark']" />
         <h2>Sua lista está vazia</h2>
-        <p>Adicione filmes que você deseja assistir!</p>
+        <p>Adicione filmes e séries que você deseja assistir!</p>
         <button @click="goHome" class="watchlist-view__cta">
-          Explorar Filmes
+          <font-awesome-icon :icon="['fas', 'film']" />
+          Explorar Catálogo
         </button>
       </div>
     </div>
@@ -98,8 +95,7 @@ onMounted(async () => {
 }
 
 .watchlist-view__title svg {
-  width: 48px;
-  height: 48px;
+  font-size: 48px;
 }
 
 .watchlist-view__subtitle {
@@ -114,10 +110,10 @@ onMounted(async () => {
 }
 
 .watchlist-view__empty svg {
-  width: 100px;
-  height: 100px;
+  font-size: 100px;
   margin: 0 auto 2rem;
   color: #374151;
+  display: block;
 }
 
 .watchlist-view__empty h2 {
@@ -141,6 +137,9 @@ onMounted(async () => {
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .watchlist-view__cta:hover {
@@ -155,8 +154,7 @@ onMounted(async () => {
   }
 
   .watchlist-view__title svg {
-    width: 36px;
-    height: 36px;
+    font-size: 36px;
   }
 }
 </style>
