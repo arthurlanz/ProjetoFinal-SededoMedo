@@ -300,7 +300,7 @@ onBeforeUnmount(() => {
 /* Info à esquerda */
 .series-hero__info {
   position: absolute;
-  left: 4%;
+  left: 8%;
   top: 50%;
   transform: translateY(-50%);
   z-index: 10;
@@ -322,20 +322,20 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 0.75rem;
   padding: 1rem 1.8rem;
-  background: #9333ea;
+  background: #dc2626;
   color: #fff;
   border-radius: 0.7rem;
   font-size: 1.145rem;
   font-weight: 700;
   text-decoration: none;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(147, 51, 234, 0.4);
+  box-shadow: 0 4px 20px rgba(220, 38, 38, 0.4);
 }
 
 .series-hero__btn:hover {
-  background: #7e22ce;
+  background: #b91c1c;
   transform: translateY(-2px);
-  box-shadow: 0 6px 30px rgba(147, 51, 234, 0.6);
+  box-shadow: 0 6px 30px rgba(220, 38, 38, 0.6);
 }
 
 .series-hero__btn svg {
@@ -364,7 +364,7 @@ onBeforeUnmount(() => {
 }
 
 .series-hero__indicator--active {
-  background: #9333ea;
+  background: #dc2626;
   width: 70px;
 }
 
@@ -414,13 +414,13 @@ onBeforeUnmount(() => {
 }
 
 .series-filters__select:hover {
-  border-color: #9333ea;
+  border-color: #dc2626;
   background: rgba(32, 31, 31, 1);
 }
 
 .series-filters__select:focus {
   outline: none;
-  border-color: #9333ea;
+  border-color: #dc2626;
   box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
 }
 
@@ -461,7 +461,7 @@ onBeforeUnmount(() => {
 
 .series-load-more__btn {
   padding: 1rem 3rem;
-  background: rgba(147, 51, 234, 0.9);
+  background: #dc2626;
   border: 2px solid transparent;
   border-radius: 0.5rem;
   color: #fff;
@@ -472,10 +472,10 @@ onBeforeUnmount(() => {
 }
 
 .series-load-more__btn:hover:not(:disabled) {
-  background: #9333ea;
-  border-color: #9333ea;
+  background: #dc2626;
+  border-color: #dc2620;
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(147, 51, 234, 0.4);
+  box-shadow: 0 10px 30px rgba(220, 38, 38, 0.4);
 }
 
 .series-load-more__btn:disabled {

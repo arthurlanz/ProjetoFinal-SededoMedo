@@ -46,7 +46,7 @@ defineProps({
   position: fixed;
   inset: 0;
   z-index: 9998;
-  background: rgba(0, 0, 0, 0.95);
+  background: rgba(20, 20, 20, 0.95);
   display: flex;
   align-items: center;
   justify-content: center;
