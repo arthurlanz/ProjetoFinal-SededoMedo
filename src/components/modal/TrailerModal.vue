@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="show" class="trailer-modal" @click="closeModal">
+      <div v-if="visible" class="trailer-modal" @click="closeModal">
         <div class="trailer-modal__overlay"></div>
 
         <div class="trailer-modal__container">
@@ -19,9 +19,9 @@
           </button>
 
           <div class="trailer-modal__content" @click.stop>
-            <div v-if="trailer" class="trailer-modal__video-wrapper">
+            <div v-if="trailerKey" class="trailer-modal__video-wrapper">
               <iframe
-                :src="getYouTubeEmbedUrl(trailer.key)"
+                :src="getYouTubeEmbedUrl(trailerKey)"
                 class="trailer-modal__video"
                 frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -43,9 +43,9 @@
               <p>Trailer não disponível</p>
             </div>
 
-            <div v-if="movie" class="trailer-modal__info">
-              <h2 class="trailer-modal__title">{{ movie.title }}</h2>
-              <p v-if="trailer" class="trailer-modal__trailer-name">{{ trailer.name }}</p>
+            <div v-if="title" class="trailer-modal__info">
+              <h2 class="trailer-modal__title">{{ title }}</h2>
+              <p v-if="trailerKey" class="trailer-modal__trailer-name">Trailer Oficial</p>
             </div>
           </div>
         </div>
@@ -58,17 +58,17 @@
 import { watch } from 'vue'
 
 const props = defineProps({
-  show: {
+  visible: {
     type: Boolean,
     default: false,
   },
-  trailer: {
-    type: Object,
+  trailerKey: {
+    type: String,
     default: null,
   },
-  movie: {
-    type: Object,
-    default: null,
+  title: {
+    type: String,
+    default: '',
   },
 })
 
@@ -84,7 +84,7 @@ const closeModal = () => {
 
 // Prevenir scroll do body quando modal está aberto
 watch(
-  () => props.show,
+  () => props.visible,
   (newVal) => {
     if (newVal) {
       document.body.style.overflow = 'hidden'
@@ -96,13 +96,13 @@ watch(
 
 // Fechar com ESC
 const handleEscape = (e) => {
-  if (e.key === 'Escape' && props.show) {
+  if (e.key === 'Escape' && props.visible) {
     closeModal()
   }
 }
 
 watch(
-  () => props.show,
+  () => props.visible,
   (newVal) => {
     if (newVal) {
       document.addEventListener('keydown', handleEscape)

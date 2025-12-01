@@ -2,13 +2,13 @@
   <div class="movie-detail">
     <LoadingScreen :loading="loading" text="Carregando detalhes..." />
 
-    <div v-if="movie && !loading" class="movie-detail__content">
+    <div v-if="series && !loading" class="movie-detail__content">
       <!-- Backdrop Hero -->
       <div class="movie-detail__hero">
         <img
-          v-if="movie.backdrop_path"
-          :src="getBackdrop(movie.backdrop_path)"
-          :alt="movie.title"
+          v-if="series.backdrop_path"
+          :src="getBackdrop(series.backdrop_path)"
+          :alt="series.name"
           class="movie-detail__backdrop"
         />
         <div class="movie-detail__backdrop-overlay"></div>
@@ -21,9 +21,9 @@
           <div class="movie-detail__poster-section">
             <div class="movie-detail__poster-wrapper">
               <img
-                v-if="movie.poster_path"
-                :src="getPosterUrl(movie.poster_path)"
-                :alt="movie.title"
+                v-if="series.poster_path"
+                :src="getPosterUrl(series.poster_path)"
+                :alt="series.name"
                 class="movie-detail__poster"
               />
               <div v-else class="movie-detail__poster-placeholder">
@@ -34,7 +34,7 @@
             <!-- Action Buttons -->
             <div class="movie-detail__actions">
               <button
-                v-if="movie.trailer"
+                v-if="series.trailer"
                 @click="showTrailerModal = true"
                 class="movie-detail__btn-play"
               >
@@ -44,13 +44,13 @@
 
               <div class="movie-detail__actions-secondary">
                 <button
-                  @click="toggleFavorite(movie)"
+                  @click="toggleFavorite(adaptedSeries)"
                   class="movie-detail__btn-icon"
-                  :class="{ 'movie-detail__btn-icon--active': isFavorite(movie.id) }"
-                  :title="isFavorite(movie.id) ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos'"
+                  :class="{ 'movie-detail__btn-icon--active': isFavorite(series.id) }"
+                  :title="isFavorite(series.id) ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos'"
                 >
                   <font-awesome-icon
-                    :icon="isFavorite(movie.id) ? ['fas', 'heart'] : ['far', 'heart']"
+                    :icon="isFavorite(series.id) ? ['fas', 'heart'] : ['far', 'heart']"
                   />
                 </button>
 
@@ -65,16 +65,16 @@
                   />
                 </button>
 
-                <button @click="shareMovie" class="movie-detail__btn-icon" title="Compartilhar">
+                <button @click="shareSeries" class="movie-detail__btn-icon" title="Compartilhar">
                   <font-awesome-icon :icon="['fas', 'share-nodes']" />
                 </button>
               </div>
             </div>
 
-            <!-- Avaliar Filme -->
+            <!-- Avaliar Série -->
             <div class="movie-detail__rating-box">
-              <h2 class="movie-detail__section-title">Avaliar Filme</h2>
-              <MovieRating :movie-id="movie.id" />
+              <h2 class="movie-detail__section-title">Avaliar Série</h2>
+              <MovieRating :movie-id="series.id" />
             </div>
           </div>
 
@@ -85,37 +85,47 @@
               Voltar
             </button>
 
-            <h1 class="movie-detail__title">{{ movie.title }}</h1>
-            <p v-if="movie.tagline" class="movie-detail__tagline">"{{ movie.tagline }}"</p>
+            <h1 class="movie-detail__title">{{ series.name }}</h1>
+            <p v-if="series.tagline" class="movie-detail__tagline">"{{ series.tagline }}"</p>
 
             <!-- Meta Info -->
             <div class="movie-detail__meta">
               <div class="movie-detail__meta-item">
                 <font-awesome-icon :icon="['fas', 'star']" />
-                <span class="movie-detail__rating">{{ movie.vote_average?.toFixed(1) || 'N/A' }}</span>
-                <span class="movie-detail__votes">({{ formatVotes(movie.vote_count) }} votos)</span>
+                <span class="movie-detail__rating">{{ series.vote_average?.toFixed(1) || 'N/A' }}</span>
+                <span class="movie-detail__votes">({{ formatVotes(series.vote_count) }} votos)</span>
               </div>
 
-              <div v-if="movie.release_date" class="movie-detail__meta-item">
+              <div v-if="series.first_air_date" class="movie-detail__meta-item">
                 <font-awesome-icon :icon="['fas', 'calendar']" />
-                <span>{{ formatDate(movie.release_date) }}</span>
+                <span>{{ formatDate(series.first_air_date) }}</span>
               </div>
 
-              <div v-if="movie.runtime" class="movie-detail__meta-item">
+              <div v-if="series.number_of_seasons" class="movie-detail__meta-item">
+                <font-awesome-icon :icon="['fas', 'film']" />
+                <span>{{ series.number_of_seasons }} temporada{{ series.number_of_seasons > 1 ? 's' : '' }}</span>
+              </div>
+
+              <div v-if="series.number_of_episodes" class="movie-detail__meta-item">
+                <font-awesome-icon :icon="['fas', 'tv']" />
+                <span>{{ series.number_of_episodes }} episódio{{ series.number_of_episodes > 1 ? 's' : '' }}</span>
+              </div>
+
+              <div v-if="series.episode_run_time && series.episode_run_time.length" class="movie-detail__meta-item">
                 <font-awesome-icon :icon="['fas', 'clock']" />
-                <span>{{ formatRuntime(movie.runtime) }}</span>
+                <span>~{{ series.episode_run_time[0] }} min/ep</span>
               </div>
 
-              <div v-if="movie.status" class="movie-detail__meta-item">
+              <div v-if="series.status" class="movie-detail__meta-item">
                 <font-awesome-icon :icon="['fas', 'info-circle']" />
-                <span>{{ translateStatus(movie.status) }}</span>
+                <span>{{ translateStatus(series.status) }}</span>
               </div>
             </div>
 
             <!-- Genres -->
             <div class="movie-detail__genres">
               <span
-                v-for="genre in movie.genres"
+                v-for="genre in series.genres"
                 :key="genre.id"
                 class="movie-detail__genre"
               >
@@ -127,89 +137,43 @@
             <div class="movie-detail__section">
               <h2 class="movie-detail__section-title">Sinopse</h2>
               <p class="movie-detail__overview">
-                {{ movie.overview || 'Sinopse não disponível.' }}
+                {{ series.overview || 'Sinopse não disponível.' }}
               </p>
             </div>
 
-            <!-- Director/Producer -->
-            <div v-if="movie.director || movie.producer" class="movie-detail__section">
-              <h2 class="movie-detail__section-title">Equipe</h2>
-              <p v-if="movie.director" class="movie-detail__text">
-                <strong>Direção:</strong> {{ movie.director }}
-              </p>
-              <p v-if="movie.producer" class="movie-detail__text">
-                <strong>Produção:</strong> {{ movie.producer }}
+            <!-- Criadores -->
+            <div v-if="series.created_by && series.created_by.length" class="movie-detail__section">
+              <h2 class="movie-detail__section-title">Criadores</h2>
+              <p class="movie-detail__text">
+                {{ series.created_by.map(c => c.name).join(', ') }}
               </p>
             </div>
 
-            <!-- Production Companies -->
-            <div v-if="movie.production_companies && movie.production_companies.length" class="movie-detail__section">
-              <h2 class="movie-detail__section-title">Produtoras</h2>
-              <div class="movie-detail__companies">
+            <!-- Networks -->
+            <div v-if="series.networks && series.networks.length" class="movie-detail__section">
+              <h2 class="movie-detail__section-title">Rede/Streaming</h2>
+              <div class="movie-detail__networks">
                 <div
-                  v-for="company in movie.production_companies.slice(0, 4)"
-                  :key="company.id"
-                  class="movie-detail__company"
+                  v-for="network in series.networks"
+                  :key="network.id"
+                  class="movie-detail__network"
                 >
                   <img
-                    v-if="company.logo_path"
-                    :src="getLogoUrl(company.logo_path)"
-                    :alt="company.name"
+                    v-if="network.logo_path"
+                    :src="getLogoUrl(network.logo_path)"
+                    :alt="network.name"
                   />
-                  <span v-else>{{ company.name }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Stats Cards -->
-            <div class="movie-detail__stats">
-              <div v-if="movie.budget" class="movie-detail__stat-card">
-                <div class="movie-detail__stat-icon">
-                  <font-awesome-icon :icon="['fas', 'money-bill-wave']" />
-                </div>
-                <div class="movie-detail__stat-content">
-                  <span class="movie-detail__stat-label">Orçamento:</span>
-                  <span class="movie-detail__stat-value">{{ formatCurrency(movie.budget) }}</span>
-                </div>
-              </div>
-
-              <div v-if="movie.revenue" class="movie-detail__stat-card">
-                <div class="movie-detail__stat-icon movie-detail__stat-icon--success">
-                  <font-awesome-icon :icon="['fas', 'chart-line']" />
-                </div>
-                <div class="movie-detail__stat-content">
-                  <span class="movie-detail__stat-label">Bilheteria:</span>
-                  <span class="movie-detail__stat-value">{{ formatCurrency(movie.revenue) }}</span>
-                </div>
-              </div>
-
-              <div v-if="movie.status" class="movie-detail__stat-card">
-                <div class="movie-detail__stat-icon movie-detail__stat-icon--info">
-                  <font-awesome-icon :icon="['fas', 'circle-info']" />
-                </div>
-                <div class="movie-detail__stat-content">
-                  <span class="movie-detail__stat-label">Status:</span>
-                  <span class="movie-detail__stat-value">{{ translateStatus(movie.status) }}</span>
-                </div>
-              </div>
-
-              <div v-if="movie.original_language" class="movie-detail__stat-card">
-                <div class="movie-detail__stat-icon movie-detail__stat-icon--language">
-                  <font-awesome-icon :icon="['fas', 'language']" />
-                </div>
-                <div class="movie-detail__stat-content">
-                  <span class="movie-detail__stat-label">Idioma:</span>
-                  <span class="movie-detail__stat-value">{{ movie.original_language.toUpperCase() }}</span>
+                  <span v-else>{{ network.name }}</span>
                 </div>
               </div>
             </div>
 
             <!-- Cast -->
-            <div v-if="movie.cast && movie.cast.length" class="movie-detail__section">
+            <div v-if="cast.length" class="movie-detail__section">
               <h2 class="movie-detail__section-title">Elenco Principal</h2>
               <div class="movie-detail__cast">
                 <div
-                  v-for="person in movie.cast.slice(0, 12)"
+                  v-for="person in cast.slice(0, 12)"
                   :key="person.id"
                   class="movie-detail__cast-item"
                 >
@@ -229,25 +193,52 @@
               </div>
             </div>
 
-            <!-- Similar Movies -->
-            <div v-if="similarMovies.length" class="movie-detail__section">
-              <h2 class="movie-detail__section-title">Filmes Similares</h2>
+            <!-- Seasons -->
+            <div v-if="series.seasons && series.seasons.length" class="movie-detail__section">
+              <h2 class="movie-detail__section-title">Temporadas</h2>
+              <div class="movie-detail__seasons">
+                <div
+                  v-for="season in series.seasons.filter(s => s.season_number > 0)"
+                  :key="season.id"
+                  class="movie-detail__season"
+                >
+                  <img
+                    v-if="season.poster_path"
+                    :src="getPosterUrl(season.poster_path)"
+                    :alt="season.name"
+                    class="movie-detail__season-poster"
+                  />
+                  <div v-else class="movie-detail__season-placeholder">
+                    <font-awesome-icon :icon="['fas', 'film']" />
+                  </div>
+                  <div class="movie-detail__season-info">
+                    <h3>{{ season.name }}</h3>
+                    <p v-if="season.episode_count">{{ season.episode_count }} episódios</p>
+                    <p v-if="season.air_date">{{ formatYear(season.air_date) }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Similar Series -->
+            <div v-if="similarSeries.length" class="movie-detail__section">
+              <h2 class="movie-detail__section-title">Séries Similares</h2>
               <div class="movie-detail__similar">
                 <div
-                  v-for="similar in similarMovies.slice(0, 6)"
+                  v-for="similar in similarSeries.slice(0, 6)"
                   :key="similar.id"
-                  @click="goToMovie(similar.id)"
+                  @click="goToSeries(similar.id)"
                   class="movie-detail__similar-item"
                 >
                   <img
                     v-if="similar.poster_path"
                     :src="getPosterUrl(similar.poster_path)"
-                    :alt="similar.title"
+                    :alt="similar.name"
                   />
                   <div v-else class="movie-detail__similar-placeholder">
                     <font-awesome-icon :icon="['fas', 'film']" />
                   </div>
-                  <p class="movie-detail__similar-title">{{ similar.title }}</p>
+                  <p class="movie-detail__similar-title">{{ similar.name }}</p>
                 </div>
               </div>
             </div>
@@ -257,10 +248,10 @@
 
       <!-- Trailer Modal -->
       <TrailerModal
-        v-if="movie.trailer"
+        v-if="series.trailer"
         :visible="showTrailerModal"
-        :trailer-key="movie.trailer"
-        :title="movie.title"
+        :trailer-key="series.trailer"
+        :title="series.name"
         @close="showTrailerModal = false"
       />
     </div>
@@ -268,31 +259,38 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useMovieStore } from '@/stores/movie'
-import { useFavorites } from '@/composables/useFavorites'
-import { useAuthStore } from '@/stores/auth'
-import { getImageUrl, getBackdropUrl } from '@/plugins/axios'
+import api, { getImageUrl } from '@/plugins/axios'
 import LoadingScreen from '@/components/layout/LoadingScreen.vue'
 import TrailerModal from '@/components/modal/TrailerModal.vue'
 import MovieRating from '@/components/movie/MovieRating.vue'
+import { useFavorites } from '@/composables/useFavorites'
+import { useWatchlist } from '@/composables/useWatchlist'
 
 const route = useRoute()
 const router = useRouter()
-const movieStore = useMovieStore()
-const authStore = useAuthStore()
-const { isFavorite, toggleFavorite: toggleFav, addToHistory } = useFavorites()
+const { isFavorite, toggleFavorite } = useFavorites()
+const { isInWatchlist, addToWatchlist, removeFromWatchlist } = useWatchlist()
 
+const series = ref(null)
+const cast = ref([])
+const similarSeries = ref([])
+const loading = ref(true)
 const showTrailerModal = ref(false)
-const similarMovies = ref([])
-const isInWatchlist = ref(false)
 
-const movie = computed(() => movieStore.selectedMovie)
-const loading = computed(() => movieStore.loading)
+// Computed para adaptar dados de série para favoritos (compatibilidade com movie)
+const adaptedSeries = computed(() => {
+  if (!series.value) return null
+  return {
+    ...series.value,
+    title: series.value.name,
+    release_date: series.value.first_air_date,
+  }
+})
 
 const getPosterUrl = (path) => getImageUrl(path, 'w500')
-const getBackdrop = (path) => getBackdropUrl(path, 'original')
+const getBackdrop = (path) => getImageUrl(path, 'original')
 const getProfileUrl = (path) => getImageUrl(path, 'w185')
 const getLogoUrl = (path) => getImageUrl(path, 'w154')
 
@@ -312,68 +310,66 @@ const formatDate = (date) => {
   })
 }
 
-const formatRuntime = (minutes) => {
-  if (!minutes) return 'N/A'
-  const hours = Math.floor(minutes / 60)
-  const mins = minutes % 60
-  return hours > 0 ? `${hours}h ${mins}min` : `${mins}min`
-}
-
-const formatCurrency = (amount) => {
-  if (!amount || amount === 0) return 'N/A'
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount)
+const formatYear = (date) => {
+  if (!date) return ''
+  return new Date(date).getFullYear()
 }
 
 const translateStatus = (status) => {
   const statusMap = {
-    'Released': 'Lançado',
-    'Post Production': 'Pós-Produção',
-    'In Production': 'Em Produção',
-    'Planned': 'Planejado',
-    'Rumored': 'Rumores',
-    'Canceled': 'Cancelado',
+    'Returning Series': 'Em exibição',
+    'Ended': 'Finalizada',
+    'Canceled': 'Cancelada',
+    'In Production': 'Em produção',
+    'Planned': 'Planejada',
   }
   return statusMap[status] || status
 }
 
-const toggleFavorite = (movie) => {
-  toggleFav(movie)
-}
-
-const handleWatchlistToggle = async () => {
-  if (!authStore.isAuthenticated) {
-    router.push({ name: 'login' })
-    return
-  }
-
+const fetchSeriesDetails = async () => {
   try {
-    const success = await authStore.toggleWatchlist(movie.value.id, !isInWatchlist.value, 'movie')
-    if (success) {
-      isInWatchlist.value = !isInWatchlist.value
+    loading.value = true
+    const id = route.params.id
+
+    // Buscar detalhes da série
+    const [detailsRes, creditsRes, similarRes, videosRes] = await Promise.all([
+      api.get(`tv/${id}`, { params: { language: 'pt-BR' } }),
+      api.get(`tv/${id}/credits`, { params: { language: 'pt-BR' } }),
+      api.get(`tv/${id}/similar`, { params: { language: 'pt-BR' } }),
+      api.get(`tv/${id}/videos`, { params: { language: 'pt-BR' } })
+    ])
+
+    series.value = detailsRes.data
+    cast.value = creditsRes.data.cast || []
+    similarSeries.value = similarRes.data.results || []
+
+    // Buscar trailer
+    const videos = videosRes.data.results || []
+    const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube')
+    if (trailer) {
+      series.value.trailer = trailer.key
     }
+
+    console.log('✅ Detalhes da série carregados:', series.value.name)
   } catch (error) {
-    console.error('Erro ao alternar watchlist:', error)
+    console.error('❌ Erro ao carregar detalhes da série:', error)
+  } finally {
+    loading.value = false
   }
 }
 
-const checkWatchlistStatus = async () => {
-  if (!authStore.isAuthenticated) return
-
-  try {
-    const watchlist = await authStore.getWatchlist()
-    isInWatchlist.value = watchlist.some((item) => item.id === parseInt(route.params.id))
-  } catch (error) {
-    console.error('Erro ao verificar watchlist:', error)
+const handleWatchlistToggle = () => {
+  if (isInWatchlist(series.value.id)) {
+    removeFromWatchlist(series.value.id)
+  } else {
+    addToWatchlist(adaptedSeries.value)
   }
 }
 
-const shareMovie = async () => {
+const shareSeries = async () => {
   const shareData = {
-    title: movie.value.title,
-    text: `Confira "${movie.value.title}" no Sede do Medo!`,
+    title: series.value.name,
+    text: `Confira "${series.value.name}" no Sede do Medo!`,
     url: window.location.href
   }
 
@@ -393,43 +389,20 @@ const goBack = () => {
   router.back()
 }
 
-const goToMovie = (id) => {
-  router.push({ name: 'movie-detail', params: { id } })
+const goToSeries = (id) => {
+  router.push({ name: 'series-detail', params: { id } })
   window.scrollTo(0, 0)
-  loadMovieData()
+  fetchSeriesDetails()
 }
-
-const loadMovieData = async () => {
-  const movieId = route.params.id
-  await movieStore.getMovieDetails(movieId)
-
-  if (movie.value) {
-    addToHistory(movie.value)
-    similarMovies.value = await movieStore.getSimilarMovies(movieId)
-    await checkWatchlistStatus()
-  }
-}
-
-watch(
-  () => route.params.id,
-  () => {
-    if (route.name === 'movie-detail') {
-      loadMovieData()
-    }
-  }
-)
 
 onMounted(() => {
-  loadMovieData()
+  fetchSeriesDetails()
 })
 </script>
 
 <style scoped>
-/* Reutilizar estilos do SeriesDetailView */
-.movie-detail {
-  min-height: 100vh;
+.movie-detail__content {
   background: rgb(20, 20, 20);
-  padding-bottom: 4rem;
 }
 
 .movie-detail__hero {
@@ -448,17 +421,20 @@ onMounted(() => {
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    to top,
-    rgb(20, 20, 20) 0%,
-    rgba(20, 20, 20, 0.8) 50%,
-    transparent 100%
+    to bottom,
+    transparent 0%,
+    transparent 30%,
+    rgba(20, 20, 20, 0.3) 50%,
+    rgba(20, 20, 20, 0.8) 70%,
+    rgba(20, 20, 20, 0.95) 90%,
+    rgb(20, 20, 20) 100%
   );
 }
 
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
 }
 
 .movie-detail__container {
@@ -690,17 +666,16 @@ onMounted(() => {
   font-size: 1rem;
   color: rgba(255, 255, 255, 0.8);
   line-height: 1.6;
-  margin-bottom: 0.5rem;
 }
 
-/* Companies */
-.movie-detail__companies {
+/* Networks */
+.movie-detail__networks {
   display: flex;
   flex-wrap: wrap;
   gap: 1.5rem;
 }
 
-.movie-detail__company {
+.movie-detail__network {
   padding: 0.75rem 1.5rem;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 0.5rem;
@@ -708,81 +683,10 @@ onMounted(() => {
   align-items: center;
 }
 
-.movie-detail__company img {
+.movie-detail__network img {
   max-height: 40px;
   max-width: 120px;
   object-fit: contain;
-}
-
-/* Stats Cards */
-.movie-detail__stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1rem;
-  margin-bottom: 3rem;
-}
-
-.movie-detail__stat-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.25rem 1.5rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 0.75rem;
-  transition: all 0.3s ease;
-}
-
-.movie-detail__stat-card:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(220, 38, 38, 0.3);
-  transform: translateY(-2px);
-}
-
-.movie-detail__stat-icon {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(220, 38, 38, 0.15);
-  border-radius: 12px;
-  color: #dc2626;
-  font-size: 1.25rem;
-}
-
-.movie-detail__stat-icon--success {
-  background: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
-}
-
-.movie-detail__stat-icon--info {
-  background: rgba(59, 130, 246, 0.15);
-  color: #3b82f6;
-}
-
-.movie-detail__stat-icon--language {
-  background: rgba(168, 85, 247, 0.15);
-  color: #a855f7;
-}
-
-.movie-detail__stat-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.movie-detail__stat-label {
-  font-size: 0.813rem;
-  color: #9ca3af;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.movie-detail__stat-value {
-  font-size: 1.125rem;
-  color: #fff;
-  font-weight: 700;
 }
 
 /* Cast */
@@ -833,7 +737,59 @@ onMounted(() => {
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* Similar Movies */
+/* Seasons */
+.movie-detail__seasons {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.movie-detail__season {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.movie-detail__season:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(220, 38, 38, 0.5);
+}
+
+.movie-detail__season-poster {
+  width: 100px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+.movie-detail__season-placeholder {
+  width: 100px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1f2937;
+  color: #6b7280;
+  border-radius: 0.5rem;
+}
+
+.movie-detail__season-info h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.movie-detail__season-info p {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.25rem;
+}
+
+/* Similar Series */
 .movie-detail__similar {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -901,10 +857,6 @@ onMounted(() => {
 
   .movie-detail__similar {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  }
-
-  .movie-detail__stats {
-    grid-template-columns: 1fr;
   }
 }
 </style>

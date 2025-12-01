@@ -34,6 +34,15 @@ const router = createRouter({
       },
     },
     {
+      path: '/series/:id',
+      name: 'series-detail',
+      component: () => import('@/views/series/SeriesDetailView.vue'),
+      meta: {
+        title: 'Detalhes da Série - Sede do Medo',
+        requiresAgeConfirmation: true,
+      },
+    },
+    {
       path: '/favorites',
       name: 'favorites',
       component: () => import('@/views/user/FavoritesView.vue'),
@@ -69,7 +78,6 @@ const router = createRouter({
         requiresAgeConfirmation: true,
       },
     },
-
     {
       path: '/profile',
       name: 'profile',
