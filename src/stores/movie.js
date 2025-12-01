@@ -122,14 +122,16 @@ export const useMovieStore = defineStore('movie', () => {
         }),
       ]);
 
+      const trailerVideo = videosResponse.data.results.find(
+        (video) => video.type === 'Trailer' && video.site === 'YouTube'
+      );
+
       state.selectedMovie = {
         ...movieResponse.data,
         cast: creditsResponse.data.cast.slice(0, 10),
         crew: creditsResponse.data.crew,
         videos: videosResponse.data.results,
-        trailer: videosResponse.data.results.find(
-          (video) => video.type === 'Trailer' && video.site === 'YouTube'
-        ),
+        trailer: trailerVideo?.key || null,
       };
     } catch (err) {
       state.error = 'Erro ao carregar detalhes do filme';
@@ -138,6 +140,8 @@ export const useMovieStore = defineStore('movie', () => {
       state.loading = false;
     }
   };
+
+
 
   const getSimilarMovies = async (id) => {
     try {
@@ -184,7 +188,6 @@ export const useMovieStore = defineStore('movie', () => {
     }
   };
 
-  // ✅ NOVO MÉTODO: Descobrir filmes com parâmetros customizados
   const discoverMovies = async (params) => {
     try {
       const response = await api.get('discover/movie', {
@@ -219,7 +222,7 @@ export const useMovieStore = defineStore('movie', () => {
     getMovieDetails,
     getSimilarMovies,
     searchMovies,
-    discoverMovies, // ✅ Adicionado ao return
+    discoverMovies,
     clearSelectedMovie,
   };
 });

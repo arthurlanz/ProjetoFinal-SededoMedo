@@ -17,7 +17,7 @@
           <div class="series-hero__info">
             <h1 class="series-hero__title">{{ featuredSeries[currentSlide]?.name }}</h1>
             <router-link
-              :to="`/movie/${featuredSeries[currentSlide]?.id}`"
+              :to="{ name: 'series-detail', params: { id: featuredSeries[currentSlide]?.id } }"
               class="series-hero__btn"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -91,10 +91,10 @@
         <LoadingScreen v-if="loading" :loading="loading" text="Carregando séries..." />
 
         <div v-else-if="seriesList.length > 0" class="series-grid">
-          <MovieCard
+          <SeriesCard
             v-for="show in seriesList"
             :key="show.id"
-            :movie="show"
+            :series="show"
           />
         </div>
 
@@ -122,7 +122,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import api from '@/plugins/axios'
 import LoadingScreen from '@/components/layout/LoadingScreen.vue'
-import MovieCard from '@/components/movie/MovieCard.vue'
+import SeriesCard from '@/components/series/SeriesCard.vue'
 
 const seriesList = ref([])
 const featuredSeries = ref([])
@@ -159,13 +159,7 @@ const fetchSeries = async (page = 1) => {
     }
 
     const response = await api.get('discover/tv', { params })
-
-    // Adaptar dados de séries para usar MovieCard
-    return response.data.results.map(show => ({
-      ...show,
-      title: show.name,
-      release_date: show.first_air_date,
-    }))
+    return response.data.results || []
   } catch (error) {
     console.error('❌ Erro ao buscar séries:', error)
     return []
@@ -254,6 +248,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* Estilos permanecem iguais ao original */
 .series-view {
   min-height: 100vh;
   background: rgb(20, 20, 20);
@@ -265,7 +260,7 @@ onBeforeUnmount(() => {
   padding: 0 2rem;
 }
 
-/* ==================== HERO CAROUSEL ==================== */
+/* HERO CAROUSEL */
 .series-hero {
   position: relative;
   height: 70vh;
@@ -297,7 +292,7 @@ onBeforeUnmount(() => {
   );
 }
 
-/* Info à esquerda */
+/* Info esquerda */
 .series-hero__info {
   position: absolute;
   left: 8%;
@@ -372,7 +367,7 @@ onBeforeUnmount(() => {
   background: rgba(255, 255, 255, 0.5);
 }
 
-/* ==================== FILTERS ==================== */
+/* FILTERS */
 .series-filters {
   background: rgba(20, 20, 20, 0.95);
   padding: 2rem 0;
@@ -424,7 +419,7 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
 }
 
-/* ==================== CONTENT ==================== */
+/* CONTENT */
 .series-content {
   padding: 4rem 0;
 }
@@ -452,7 +447,7 @@ onBeforeUnmount(() => {
   font-size: 1.125rem;
 }
 
-/* ==================== LOAD MORE ==================== */
+/* LOAD MORE */
 .series-load-more {
   display: flex;
   justify-content: center;
@@ -483,16 +478,18 @@ onBeforeUnmount(() => {
   cursor: not-allowed;
 }
 
-/* ==================== TRANSITIONS ==================== */
-.fade-enter-active, .fade-leave-active {
+/* TRANSITIONS */
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 1s ease;
 }
 
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
-/* ==================== RESPONSIVE ==================== */
+/* RESPONSIVE */
 @media (max-width: 1024px) {
   .series-hero__title {
     font-size: 3.5rem;

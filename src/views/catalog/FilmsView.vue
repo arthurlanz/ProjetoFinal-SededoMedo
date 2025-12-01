@@ -283,7 +283,7 @@ onBeforeUnmount(() => {
 /* Info à esquerda */
 .films-hero__info {
   position: absolute;
-  left: 4%;
+  left: 8%;
   top: 50%;
   transform: translateY(-50%);
   z-index: 10;

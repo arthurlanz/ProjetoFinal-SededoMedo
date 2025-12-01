@@ -8,7 +8,7 @@
         class="app-header"
         :class="{
           'app-header--scrolled': isScrolled,
-          'app-header--transparent': isHomePage || isDetailPage || isFilmsPage || isSeriesPage,
+          'app-header--transparent': isHomePage || isDetailPage || isFilmsPage || isSeriesPage || isDetailsPage,
         }"
       >
         <div class="app-header__container">
@@ -136,6 +136,7 @@
           'app-main--full': isLoginPage,
           'app-main--home': isHomePage || isFilmsPage || isSeriesPage,
           'app-main--detail': isDetailPage,
+          'app-main--detail': isDetailsPage,
         }"
       >
         <router-view />
@@ -261,6 +262,7 @@ const isHomePage = computed(() => route.path === '/')
 const isDetailPage = computed(() => route.name === 'movie-detail')
 const isFilmsPage = computed(() => route.path === '/films')
 const isSeriesPage = computed(() => route.path === '/series')
+const isDetailsPage = computed(() => route.name === 'series-detail')
 const ageConfirmed = ref(false)
 const mobileMenuOpen = ref(false)
 const isScrolled = ref(false)
@@ -488,7 +490,6 @@ onUnmounted(() => {
 .app-footer {
   background: rgb(20, 20, 20);
   padding: 4rem 0 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .app-footer__container {
