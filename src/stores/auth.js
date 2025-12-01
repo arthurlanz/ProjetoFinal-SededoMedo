@@ -31,10 +31,8 @@ export const useAuthStore = defineStore('auth', () => {
   const validateWithLogin = async (username, password) => {
     state.loading = true;
     state.error = null;
-
     try {
       const requestToken = await createRequestToken();
-
       const response = await api.post('authentication/token/validate_with_login', {
         username,
         password,
@@ -45,6 +43,7 @@ export const useAuthStore = defineStore('auth', () => {
         state.requestToken = response.data.request_token;
         return true;
       }
+
       return false;
     } catch (err) {
       state.error = 'Usuário ou senha inválidos';
@@ -66,6 +65,7 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.setItem('tmdb_session_id', state.sessionId);
         return true;
       }
+
       return false;
     } catch (err) {
       console.error('Erro ao criar sessão:', err);
@@ -88,8 +88,8 @@ export const useAuthStore = defineStore('auth', () => {
         avatar: response.data.avatar?.tmdb?.avatar_path
           ? `https://image.tmdb.org/t/p/w185${response.data.avatar.tmdb.avatar_path}`
           : response.data.avatar?.gravatar?.hash
-          ? `https://www.gravatar.com/avatar/${response.data.avatar.gravatar.hash}`
-          : null,
+            ? `https://www.gravatar.com/avatar/${response.data.avatar.gravatar.hash}`
+            : null,
         includeAdult: response.data.include_adult,
         iso_639_1: response.data.iso_639_1,
         iso_3166_1: response.data.iso_3166_1,
@@ -107,7 +107,6 @@ export const useAuthStore = defineStore('auth', () => {
   const login = async (username, password) => {
     state.loading = true;
     state.error = null;
-
     try {
       const validated = await validateWithLogin(username, password);
       if (!validated) {
@@ -121,6 +120,12 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       await fetchAccountDetails();
+
+      // 🆕 CARREGAR FAVORITOS DA API APÓS LOGIN
+      console.log('✅ Login bem-sucedido! Carregando favoritos da API...');
+      const { useFavoritesStore } = await import('@/stores/favorites');
+      const favoritesStore = useFavoritesStore();
+      await favoritesStore.loadFromTMDB();
 
       return true;
     } catch (err) {
@@ -143,12 +148,19 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (err) {
       console.error('Erro ao fazer logout:', err);
     } finally {
+      // Limpar estado de autenticação
       state.user = null;
       state.sessionId = null;
       state.requestToken = null;
       state.isAuthenticated = false;
       localStorage.removeItem('tmdb_session_id');
       localStorage.removeItem('tmdb_user');
+
+      // 🆕 LIMPAR TODOS OS FAVORITOS E HISTÓRICO DO NAVEGADOR
+      console.log('🧹 Limpando favoritos e histórico do navegador...');
+      const { useFavoritesStore } = await import('@/stores/favorites');
+      const favoritesStore = useFavoritesStore();
+      favoritesStore.clearAll();
     }
   };
 
@@ -160,9 +172,14 @@ export const useAuthStore = defineStore('auth', () => {
       try {
         state.sessionId = savedSessionId;
         state.user = JSON.parse(savedUser);
-
         await fetchAccountDetails();
         state.isAuthenticated = true;
+
+        // 🆕 SINCRONIZAR FAVORITOS AO RESTAURAR SESSÃO
+        const { useFavoritesStore } = await import('@/stores/favorites');
+        const favoritesStore = useFavoritesStore();
+        await favoritesStore.loadFromTMDB();
+
         return true;
       } catch (err) {
         console.error('Sessão inválida ou expirada', err);
@@ -190,6 +207,16 @@ export const useAuthStore = defineStore('auth', () => {
   };
 
   const toggleFavoriteTMDB = async (movieId, favorite) => {
+    if (!state.user || !state.user.id) {
+      console.error('❌ Usuário não está definido');
+      return false;
+    }
+
+    if (!state.sessionId) {
+      console.error('❌ Session ID não está definido');
+      return false;
+    }
+
     try {
       const response = await api.post(
         `account/${state.user.id}/favorite`,
@@ -204,36 +231,73 @@ export const useAuthStore = defineStore('auth', () => {
           },
         }
       );
+
       return response.data.success;
     } catch (err) {
-      console.error('Erro ao atualizar favorito:', err);
+      console.error('❌ Erro ao atualizar favorito no TMDB:', err);
       return false;
     }
   };
 
-  const getWatchlist = async (page = 1) => {
+  const getWatchlist = async () => {
+    if (!state.user || !state.sessionId) {
+      console.log('⚠️ Usuário não autenticado')
+      return []
+    }
+
     try {
-      const response = await api.get(`account/${state.user.id}/watchlist/movies`, {
-        params: {
-          session_id: state.sessionId,
-          language: 'pt-BR',
-          page,
-        },
-      });
-      return response.data.results;
+      console.log('📥 Carregando watchlist (filmes + séries) da API TMDB...')
+
+      const [moviesResponse, tvResponse] = await Promise.all([
+        api.get(`account/${state.user.id}/watchlist/movies`, {
+          params: {
+            session_id: state.sessionId,
+            language: 'pt-BR',
+            sort_by: 'created_at.desc',
+          },
+        }),
+        api.get(`account/${state.user.id}/watchlist/tv`, {
+          params: {
+            session_id: state.sessionId,
+            language: 'pt-BR',
+            sort_by: 'created_at.desc',
+          },
+        })
+      ])
+
+      // Combinar filmes e séries, adaptando séries para formato de filme
+      const movies = moviesResponse.data.results
+      const series = tvResponse.data.results.map(show => ({
+        ...show,
+        title: show.name,
+        release_date: show.first_air_date,
+        media_type: 'tv'
+      }))
+
+      const allItems = [...movies, ...series]
+      console.log(`✅ ${allItems.length} itens na watchlist carregados (${movies.length} filmes + ${series.length} séries)`)
+
+      return allItems
     } catch (err) {
-      console.error('Erro ao buscar watchlist:', err);
-      return [];
+      console.error('❌ Erro ao buscar watchlist:', err)
+      return []
     }
   };
 
-  const toggleWatchlist = async (movieId, watchlist) => {
+  const toggleWatchlist = async (mediaId, watchlist, mediaType = 'movie') => {
+    if (!state.user || !state.sessionId) {
+      console.error('❌ Usuário não autenticado')
+      return false
+    }
+
     try {
+      console.log(`${watchlist ? '➕' : '➖'} ${watchlist ? 'Adicionando' : 'Removendo'} ${mediaType} ${mediaId} ${watchlist ? 'na' : 'da'} watchlist...`)
+
       const response = await api.post(
         `account/${state.user.id}/watchlist`,
         {
-          media_type: 'movie',
-          media_id: movieId,
+          media_type: mediaType,
+          media_id: mediaId,
           watchlist,
         },
         {
@@ -241,11 +305,13 @@ export const useAuthStore = defineStore('auth', () => {
             session_id: state.sessionId,
           },
         }
-      );
-      return response.data.success;
+      )
+
+      console.log(`✅ Watchlist atualizada com sucesso!`)
+      return response.data.success
     } catch (err) {
-      console.error('Erro ao atualizar watchlist:', err);
-      return false;
+      console.error('❌ Erro ao atualizar watchlist:', err)
+      return false
     }
   };
 

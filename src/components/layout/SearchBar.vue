@@ -1,299 +1,392 @@
 <template>
-    <div class="search-bar">
-      <div class="search-bar__input-wrapper">
-        <svg class="search-bar__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Buscar filmes de terror..."
-          class="search-bar__input"
-          @input="handleInput"
-          @keyup.enter="handleSearch"
-        />
-        <button
-          v-if="searchQuery"
-          @click="clearSearch"
-          class="search-bar__clear"
-          type="button"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      </div>
-  
-      <!-- Suggestions -->
-      <Transition name="slide">
-        <div v-if="showSuggestions && suggestions.length > 0" class="search-bar__suggestions">
-          <div
-            v-for="movie in suggestions"
-            :key="movie.id"
-            @click="selectMovie(movie)"
-            class="search-bar__suggestion"
+  <div class="search-bar" :class="{ 'search-bar--expanded': isExpanded }">
+    <div class="search-bar__container">
+      <button
+        v-if="!isExpanded"
+        @click="expand"
+        class="search-bar__icon-btn"
+        type="button"
+        aria-label="Buscar"
+      >
+        <font-awesome-icon :icon="['fas', 'search']" />
+      </button>
+
+      <Transition name="expand">
+        <div v-if="isExpanded" class="search-bar__input-wrapper">
+          <font-awesome-icon :icon="['fas', 'search']" class="search-bar__icon" />
+          <input
+            ref="searchInput"
+            v-model="searchQuery"
+            type="text"
+            placeholder="Títulos, gêneros..."
+            class="search-bar__input"
+            @input="handleInput"
+            @keyup.enter="handleSearch"
+            @blur="handleBlur"
+          />
+          <button
+            v-if="searchQuery"
+            @click="clearSearch"
+            class="search-bar__clear"
+            type="button"
           >
-            <img
-              v-if="movie.poster_path"
-              :src="getPosterUrl(movie.poster_path, 'w92')"
-              :alt="movie.title"
-              class="search-bar__suggestion-poster"
-            />
-            <div class="search-bar__suggestion-poster-placeholder" v-else>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
-                <line x1="7" y1="2" x2="7" y2="22"/>
-                <line x1="17" y1="2" x2="17" y2="22"/>
-              </svg>
-            </div>
-            <div class="search-bar__suggestion-info">
-              <p class="search-bar__suggestion-title">{{ movie.title }}</p>
-              <p class="search-bar__suggestion-year">
-                {{ movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A' }}
-              </p>
-            </div>
-          </div>
+            <font-awesome-icon :icon="['fas', 'times']"/>
+          </button>
         </div>
       </Transition>
     </div>
-  </template>
-  
-  <script setup>
-  import { ref, watch } from 'vue';
-  import { useRouter } from 'vue-router';
-  import { getImageUrl } from '@/plugins/axios';
-  import api from '@/plugins/axios';
-  
-  const router = useRouter();
-  const searchQuery = ref('');
-  const suggestions = ref([]);
-  const showSuggestions = ref(false);
-  let debounceTimer = null;
-  
-  const emit = defineEmits(['search', 'clear']);
-  
-  const getPosterUrl = (path, size = 'w92') => {
-    return getImageUrl(path, size);
-  };
-  
-  const handleInput = () => {
-    clearTimeout(debounceTimer);
-  
-    if (searchQuery.value.trim().length < 2) {
-      suggestions.value = [];
-      showSuggestions.value = false;
-      return;
+
+    <Transition name="slide">
+      <div v-if="showSuggestions && suggestions.length > 0" class="search-bar__suggestions">
+        <div
+          v-for="item in suggestions"
+          :key="`${item.media_type}-${item.id}`"
+          @mousedown.prevent="selectItem(item)"
+          class="search-bar__suggestion"
+        >
+          <img
+            v-if="item.poster_path"
+            :src="getPosterUrl(item.poster_path, 'w92')"
+            :alt="item.title || item.name"
+            class="search-bar__suggestion-poster"
+          />
+          <div class="search-bar__suggestion-poster-placeholder" v-else>
+            <font-awesome-icon :icon="['fas', 'film']" />
+          </div>
+          <div class="search-bar__suggestion-info">
+            <p class="search-bar__suggestion-title">
+              {{ item.title || item.name }}
+              <span v-if="item.media_type === 'tv'" class="search-bar__badge">Série</span>
+            </p>
+            <p class="search-bar__suggestion-year">
+              {{ item.release_date ? new Date(item.release_date).getFullYear() :
+                 item.first_air_date ? new Date(item.first_air_date).getFullYear() : 'N/A' }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </div>
+</template>
+
+<script setup>
+// Script permanece IGUAL
+import { ref, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
+import { getImageUrl } from '@/plugins/axios';
+import api from '@/plugins/axios';
+
+const router = useRouter();
+const searchInput = ref(null);
+const searchQuery = ref('');
+const suggestions = ref([]);
+const showSuggestions = ref(false);
+const isExpanded = ref(false);
+let debounceTimer = null;
+
+const emit = defineEmits(['search', 'clear']);
+
+const getPosterUrl = (path, size = 'w92') => {
+  return getImageUrl(path, size);
+};
+
+const expand = async () => {
+  isExpanded.value = true;
+  await nextTick();
+  searchInput.value?.focus();
+};
+
+const collapse = () => {
+  if (!searchQuery.value) {
+    isExpanded.value = false;
+    showSuggestions.value = false;
+  }
+};
+
+const handleBlur = () => {
+  setTimeout(() => {
+    if (!searchQuery.value) {
+      collapse();
     }
-  
-    debounceTimer = setTimeout(async () => {
-      try {
-        const response = await api.get('search/movie', {
+    showSuggestions.value = false;
+  }, 200);
+};
+
+const handleInput = () => {
+  clearTimeout(debounceTimer);
+
+  if (searchQuery.value.trim().length < 2) {
+    suggestions.value = [];
+    showSuggestions.value = false;
+    return;
+  }
+
+  debounceTimer = setTimeout(async () => {
+    try {
+      const [moviesResponse, seriesResponse] = await Promise.all([
+        api.get('search/movie', {
           params: {
             language: 'pt-BR',
             query: searchQuery.value,
-            with_genres: 27,
           },
-        });
-  
-        suggestions.value = response.data.results
-          .filter(movie => movie.genre_ids.includes(27))
-          .slice(0, 5);
-        showSuggestions.value = true;
-      } catch (error) {
-        console.error('Erro ao buscar sugestões:', error);
-      }
-    }, 300);
-  };
-  
-  const handleSearch = () => {
-    if (searchQuery.value.trim()) {
-      showSuggestions.value = false;
-      emit('search', searchQuery.value);
-      router.push({ name: 'search', query: { q: searchQuery.value } });
+        }),
+        api.get('search/tv', {
+          params: {
+            language: 'pt-BR',
+            query: searchQuery.value,
+          },
+        }),
+      ]);
+
+      const horrorMovies = moviesResponse.data.results
+        .filter(movie => movie.genre_ids.includes(27))
+        .slice(0, 3)
+        .map(movie => ({ ...movie, media_type: 'movie' }));
+
+      const relevantSeries = seriesResponse.data.results
+        .filter(show =>
+          show.genre_ids.some(id => [9648, 80, 18, 10765].includes(id))
+        )
+        .slice(0, 3)
+        .map(show => ({ ...show, media_type: 'tv' }));
+
+      suggestions.value = [...horrorMovies, ...relevantSeries].slice(0, 5);
+      showSuggestions.value = true;
+    } catch (error) {
+      console.error('Erro ao buscar sugestões:', error);
     }
-  };
-  
-  const clearSearch = () => {
-    searchQuery.value = '';
-    suggestions.value = [];
+  }, 300);
+};
+
+const handleSearch = () => {
+  if (searchQuery.value.trim()) {
     showSuggestions.value = false;
-    emit('clear');
-  };
-  
-  const selectMovie = (movie) => {
-    showSuggestions.value = false;
-    router.push({ name: 'movie-detail', params: { id: movie.id } });
-  };
-  
-  // Fechar sugestões ao clicar fora
-  const handleClickOutside = (event) => {
-    if (!event.target.closest('.search-bar')) {
-      showSuggestions.value = false;
-    }
-  };
-  
-  watch(showSuggestions, (newVal) => {
-    if (newVal) {
-      document.addEventListener('click', handleClickOutside);
-    } else {
-      document.removeEventListener('click', handleClickOutside);
-    }
-  });
-  </script>
-  
-  <style scoped>
-  .search-bar {
-    position: relative;
-    width: 100%;
+    emit('search', searchQuery.value);
+    router.push({ name: 'search', query: { q: searchQuery.value } });
+    searchInput.value?.blur();
   }
-  
-  .search-bar__input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-  
-  .search-bar__icon {
-    position: absolute;
-    left: 1rem;
-    width: 20px;
-    height: 20px;
-    color: #6b7280;
-    pointer-events: none;
-  }
-  
+};
+
+const clearSearch = () => {
+  searchQuery.value = '';
+  suggestions.value = [];
+  showSuggestions.value = false;
+  emit('clear');
+  searchInput.value?.focus();
+};
+
+const selectItem = (item) => {
+  showSuggestions.value = false;
+  searchQuery.value = '';
+  isExpanded.value = false;
+
+  router.push({ name: 'movie-detail', params: { id: item.id } });
+};
+</script>
+
+<style scoped>
+.search-bar {
+  position: relative;
+}
+
+.search-bar__icon-btn {
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+  font-size: 18px;
+}
+
+.search-bar__icon-btn:hover {
+  color: #b3b3b3;
+}
+
+.search-bar__container {
+  position: relative;
+}
+
+.search-bar__input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 2px;
+  backdrop-filter: blur(10px);
+}
+
+.search-bar__icon {
+  position: absolute;
+  left: 0.75rem;
+  color: #fff;
+  pointer-events: none;
+  z-index: 1;
+  font-size: 14px;
+}
+
+.search-bar__input {
+  width: 260px;
+  padding: 0.5rem 2.5rem 0.5rem 2.75rem;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.search-bar__input:focus {
+  outline: none;
+}
+
+.search-bar__input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.search-bar__clear {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 0;
+  z-index: 1;
+  font-size: 14px;
+}
+
+.search-bar__clear:hover {
+  color: #b3b3b3;
+}
+
+.search-bar__suggestions {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: 300px;
+  background: rgba(0, 0, 0, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+  z-index: 1000;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+.search-bar__suggestion {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.search-bar__suggestion:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.search-bar__suggestion:not(:last-child) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.search-bar__suggestion-poster {
+  width: 40px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.search-bar__suggestion-poster-placeholder {
+  width: 40px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+  font-size: 18px;
+}
+
+.search-bar__suggestion-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.search-bar__suggestion-title {
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-bar__badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  background: rgba(147, 51, 234, 0.3);
+  border: 1px solid rgba(147, 51, 234, 0.5);
+  border-radius: 3px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: #9333ea;
+  flex-shrink: 0;
+}
+
+.search-bar__suggestion-year {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+}
+
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.expand-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.expand-leave-to {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.2s ease;
+}
+
+.slide-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.slide-leave-to {
+  opacity: 0;
+  transform: translateY(-5px);
+}
+
+@media (max-width: 768px) {
   .search-bar__input {
-    width: 100%;
-    padding: 0.75rem 3rem 0.75rem 3rem;
-    background: #131313fd;
-    border: 1px solid rgba(139, 0, 0, 0.3);
-    border-radius: 0.5rem;
-    color: white;
-    font-size: 1rem;
-    transition: all 0.3s ease;
+    width: 200px;
   }
-  
-  .search-bar__input:focus {
-    outline: none;
-    border-color: #dc2626;
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
-  }
-  
-  .search-bar__input::placeholder {
-    color: #6b7280;
-  }
-  
-  .search-bar__clear {
-    position: absolute;
-    right: 1rem;
-    width: 20px;
-    height: 20px;
-    background: none;
-    border: none;
-    color: #6b7280;
-    cursor: pointer;
-    transition: color 0.2s ease;
-    padding: 0;
-  }
-  
-  .search-bar__clear:hover {
-    color: #dc2626;
-  }
-  
-  .search-bar__clear svg {
-    width: 100%;
-    height: 100%;
-  }
-  
+
   .search-bar__suggestions {
-    position: absolute;
-    top: calc(100% + 0.5rem);
-    left: 0;
-    right: 0;
-    background: #1f2937;
-    border: 1px solid rgba(139, 0, 0, 0.3);
-    border-radius: 0.5rem;
-    overflow: hidden;
-    z-index: 50;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    width: 260px;
   }
-  
-  .search-bar__suggestion {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.75rem 1rem;
-    cursor: pointer;
-    transition: background 0.2s ease;
-  }
-  
-  .search-bar__suggestion:hover {
-    background: rgba(139, 0, 0, 0.2);
-  }
-  
-  .search-bar__suggestion:not(:last-child) {
-    border-bottom: 1px solid rgba(139, 0, 0, 0.2);
-  }
-  
-  .search-bar__suggestion-poster {
-    width: 40px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 0.25rem;
-    flex-shrink: 0;
-  }
-  
-  .search-bar__suggestion-poster-placeholder {
-    width: 40px;
-    height: 60px;
-    background: #374151;
-    border-radius: 0.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6b7280;
-    flex-shrink: 0;
-  }
-  
-  .search-bar__suggestion-poster-placeholder svg {
-    width: 20px;
-    height: 20px;
-  }
-  
-  .search-bar__suggestion-info {
-    flex: 1;
-    min-width: 0;
-  }
-  
-  .search-bar__suggestion-title {
-    color: white;
-    font-weight: 600;
-    font-size: 0.9rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-bottom: 0.25rem;
-  }
-  
-  .search-bar__suggestion-year {
-    color: #9ca3af;
-    font-size: 0.8rem;
-  }
-  
-  .slide-enter-active, .slide-leave-active {
-    transition: all 0.2s ease;
-  }
-  
-  .slide-enter-from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  
-  .slide-leave-to {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  </style>
-  
+}
+</style>

@@ -14,6 +14,7 @@ export const useMovieStore = defineStore('movie', () => {
     currentPage: 1,
     totalPages: 1,
   });
+
   const movies = computed(() => state.movies);
   const trendingMovies = computed(() => state.trendingMovies);
   const popularMovies = computed(() => state.popularMovies);
@@ -21,6 +22,7 @@ export const useMovieStore = defineStore('movie', () => {
   const selectedMovie = computed(() => state.selectedMovie);
   const loading = computed(() => state.loading);
   const error = computed(() => state.error);
+
   const getHorrorMovies = async (page = 1) => {
     state.loading = true;
     state.error = null;
@@ -43,6 +45,7 @@ export const useMovieStore = defineStore('movie', () => {
       state.loading = false;
     }
   };
+
   const getTrendingHorrorMovies = async () => {
     state.loading = true;
     try {
@@ -61,6 +64,7 @@ export const useMovieStore = defineStore('movie', () => {
       state.loading = false;
     }
   };
+
   const getPopularHorrorMovies = async () => {
     state.loading = true;
     try {
@@ -80,6 +84,7 @@ export const useMovieStore = defineStore('movie', () => {
       state.loading = false;
     }
   };
+
   const getTopRatedHorrorMovies = async () => {
     state.loading = true;
     try {
@@ -100,6 +105,7 @@ export const useMovieStore = defineStore('movie', () => {
       state.loading = false;
     }
   };
+
   const getMovieDetails = async (id) => {
     state.loading = true;
     state.error = null;
@@ -116,14 +122,16 @@ export const useMovieStore = defineStore('movie', () => {
         }),
       ]);
 
+      const trailerVideo = videosResponse.data.results.find(
+        (video) => video.type === 'Trailer' && video.site === 'YouTube'
+      );
+
       state.selectedMovie = {
         ...movieResponse.data,
         cast: creditsResponse.data.cast.slice(0, 10),
         crew: creditsResponse.data.crew,
         videos: videosResponse.data.results,
-        trailer: videosResponse.data.results.find(
-          (video) => video.type === 'Trailer' && video.site === 'YouTube'
-        ),
+        trailer: trailerVideo?.key || null,
       };
     } catch (err) {
       state.error = 'Erro ao carregar detalhes do filme';
@@ -132,6 +140,9 @@ export const useMovieStore = defineStore('movie', () => {
       state.loading = false;
     }
   };
+
+
+
   const getSimilarMovies = async (id) => {
     try {
       const response = await api.get(`movie/${id}/similar`, {
@@ -146,6 +157,7 @@ export const useMovieStore = defineStore('movie', () => {
       return [];
     }
   };
+
   const searchMovies = async (query, page = 1) => {
     if (!query.trim()) {
       state.movies = [];
@@ -175,6 +187,22 @@ export const useMovieStore = defineStore('movie', () => {
       state.loading = false;
     }
   };
+
+  const discoverMovies = async (params) => {
+    try {
+      const response = await api.get('discover/movie', {
+        params: {
+          language: 'pt-BR',
+          ...params,
+        },
+      });
+      return response.data.results;
+    } catch (err) {
+      console.error('Erro ao descobrir filmes:', err);
+      return [];
+    }
+  };
+
   const clearSelectedMovie = () => {
     state.selectedMovie = null;
   };
@@ -194,6 +222,7 @@ export const useMovieStore = defineStore('movie', () => {
     getMovieDetails,
     getSimilarMovies,
     searchMovies,
+    discoverMovies,
     clearSelectedMovie,
   };
 });

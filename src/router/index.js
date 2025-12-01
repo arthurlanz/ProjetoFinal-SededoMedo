@@ -34,6 +34,15 @@ const router = createRouter({
       },
     },
     {
+      path: '/series/:id',
+      name: 'series-detail',
+      component: () => import('@/views/series/SeriesDetailView.vue'),
+      meta: {
+        title: 'Detalhes da Série - Sede do Medo',
+        requiresAgeConfirmation: true,
+      },
+    },
+    {
       path: '/favorites',
       name: 'favorites',
       component: () => import('@/views/user/FavoritesView.vue'),
@@ -48,6 +57,24 @@ const router = createRouter({
       component: () => import('@/views/layout/SearchView.vue'),
       meta: {
         title: 'Buscar Filmes - Sede do Medo',
+        requiresAgeConfirmation: true,
+      },
+    },
+    {
+      path: '/films',
+      name: 'films',
+      component: () => import('@/views/catalog/FilmsView.vue'),
+      meta: {
+        title: 'Filmes de Terror - Sede do Medo',
+        requiresAgeConfirmation: true,
+      },
+    },
+    {
+      path: '/series',
+      name: 'series',
+      component: () => import('@/views/catalog/SeriesView.vue'),
+      meta: {
+        title: 'Séries de Terror - Sede do Medo',
         requiresAgeConfirmation: true,
       },
     },
