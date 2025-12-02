@@ -8,7 +8,7 @@
           :key="currentSlide"
           class="films-hero__slide"
           :style="{
-            backgroundImage: `url(https://image.tmdb.org/t/p/original${featuredMovies[currentSlide]?.backdrop_path})`
+            backgroundImage: `url(https://image.tmdb.org/t/p/original${featuredMovies[currentSlide]?.backdrop_path})`,
           }"
         >
           <div class="films-hero__overlay"></div>
@@ -16,12 +16,9 @@
           <!-- Info à esquerda -->
           <div class="films-hero__info">
             <h1 class="films-hero__title">{{ featuredMovies[currentSlide]?.title }}</h1>
-            <router-link
-              :to="`/movie/${featuredMovies[currentSlide]?.id}`"
-              class="films-hero__btn"
-            >
+            <router-link :to="`/movie/${featuredMovies[currentSlide]?.id}`" class="films-hero__btn">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8 5v14l11-7z"/>
+                <path d="M8 5v14l11-7z" />
               </svg>
               Ver Detalhes
             </router-link>
@@ -35,7 +32,10 @@
           v-for="(movie, index) in featuredMovies"
           :key="movie.id"
           @click="goToSlide(index)"
-          :class="['films-hero__indicator', { 'films-hero__indicator--active': index === currentSlide }]"
+          :class="[
+            'films-hero__indicator',
+            { 'films-hero__indicator--active': index === currentSlide },
+          ]"
         ></button>
       </div>
     </section>
@@ -82,24 +82,25 @@
         <LoadingScreen v-if="loading" :loading="loading" text="Carregando filmes..." />
 
         <div v-else-if="movies.length > 0" class="films-grid">
-          <MovieCard
-            v-for="movie in movies"
-            :key="movie.id"
-            :movie="movie"
-            view-mode="grid"
-          />
+          <MovieCard v-for="movie in movies" :key="movie.id" :movie="movie" view-mode="grid" />
         </div>
 
         <div v-else class="films-empty">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
-            <line x1="7" y1="2" x2="7" y2="22"/>
-            <line x1="17" y1="2" x2="17" y2="22"/>
-            <line x1="2" y1="12" x2="22" y2="12"/>
-            <line x1="2" y1="7" x2="7" y2="7"/>
-            <line x1="2" y1="17" x2="7" y2="17"/>
-            <line x1="17" y1="17" x2="22" y2="17"/>
-            <line x1="17" y1="7" x2="22" y2="7"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+            <line x1="7" y1="2" x2="7" y2="22" />
+            <line x1="17" y1="2" x2="17" y2="22" />
+            <line x1="2" y1="12" x2="22" y2="12" />
+            <line x1="2" y1="7" x2="7" y2="7" />
+            <line x1="2" y1="17" x2="7" y2="17" />
+            <line x1="17" y1="17" x2="22" y2="17" />
+            <line x1="17" y1="7" x2="22" y2="7" />
           </svg>
           <p>Nenhum filme encontrado com esses filtros.</p>
         </div>
@@ -224,10 +225,7 @@ const goToSlide = (index) => {
 }
 
 onMounted(async () => {
-  await Promise.all([
-    fetchFeaturedMovies(),
-    loadMovies()
-  ])
+  await Promise.all([fetchFeaturedMovies(), loadMovies()])
   startCarousel()
 })
 
@@ -266,18 +264,15 @@ onBeforeUnmount(() => {
 .films-hero__overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to right,
-    rgba(20, 20, 20, 0.98) 0%,
-    rgba(20, 20, 20, 0.8) 30%,
-    rgba(20, 20, 20, 0.3) 60%,
-    transparent 100%
-  ),
-  linear-gradient(
-    to top,
-    rgba(20, 20, 20, 1) 0%,
-    transparent 40%
-  );
+  background:
+    linear-gradient(
+      to right,
+      rgba(20, 20, 20, 0.98) 0%,
+      rgba(20, 20, 20, 0.8) 30%,
+      rgba(20, 20, 20, 0.3) 60%,
+      transparent 100%
+    ),
+    linear-gradient(to top, rgba(20, 20, 20, 1) 0%, transparent 40%);
 }
 
 /* Info à esquerda */
@@ -362,7 +357,7 @@ onBeforeUnmount(() => {
   backdrop-filter: blur(10px);
   position: sticky;
   top: 70px;
-  z-index:50;
+  z-index: 50;
 }
 
 .films-filters__wrapper {
@@ -414,8 +409,15 @@ onBeforeUnmount(() => {
 
 .films-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.2rem;
+  width: 100%;
+}
+
+.films-grid > * {
+  position: relative;
+  width: 100%;
+  height: auto;
 }
 
 .films-empty {
@@ -456,9 +458,7 @@ onBeforeUnmount(() => {
 
 .films-load-more__btn:hover:not(:disabled) {
   background: #dc2626;
-  border-color: #dc2626;
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(220, 38, 38, 0.4);
 }
 
 .films-load-more__btn:disabled {
@@ -467,15 +467,23 @@ onBeforeUnmount(() => {
 }
 
 /* ==================== TRANSITIONS ==================== */
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 1s ease;
 }
 
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
 /* ==================== RESPONSIVE ==================== */
+@media (max-width: 1200px) {
+  .films-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 @media (max-width: 1024px) {
   .films-hero__title {
     font-size: 3.5rem;
@@ -525,8 +533,8 @@ onBeforeUnmount(() => {
   }
 
   .films-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
 }
 
@@ -543,6 +551,11 @@ onBeforeUnmount(() => {
   .films-hero__btn svg {
     width: 20px;
     height: 20px;
+  }
+
+  .films-grid {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 0.75rem;
   }
 }
 </style>

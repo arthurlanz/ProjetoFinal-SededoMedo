@@ -16,15 +16,7 @@
       <div v-else class="movie-card__poster-placeholder">
         <font-awesome-icon :icon="['fas', 'tv']" />
       </div>
-
       <div v-if="!imageLoaded && series.poster_path" class="movie-card__skeleton"></div>
-
-      <div class="movie-card__overlay">
-        <div class="movie-card__play-icon">
-          <font-awesome-icon :icon="['fas', 'play']" />
-        </div>
-      </div>
-
       <button
         @click.stop="toggleFavorite"
         class="movie-card__favorite"
@@ -154,21 +146,23 @@ const toggleFavorite = () => {
 </script>
 
 <style scoped>
-/* Reutiliza os mesmos estilos do MovieCard */
 .movie-card {
   position: relative;
-  background: linear-gradient(to bottom, #1f2937, #000000);
-  border: 1px solid rgba(139, 0, 0, 0.3);
+  background: rgb(12, 12, 12);
+  border: 1px solid #333;
   border-radius: 0.75rem;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s;
+  will-change: transform;
+  width: 100%;
+  display: block;
+  z-index: 1;
 }
 
 .movie-card:hover {
-  border-color: #dc2626;
-  box-shadow: 0 20px 40px rgba(220, 38, 38, 0.3);
-  transform: translateY(-5px);
+  transform: translateY(-5px) scale(1.03);
+  z-index: 2;
 }
 
 .movie-card--list {
@@ -179,6 +173,7 @@ const toggleFavorite = () => {
 .movie-card__poster-wrapper {
   position: relative;
   aspect-ratio: 2/3;
+  width: 100%;
   overflow: hidden;
   background: #111827;
 }
@@ -192,7 +187,7 @@ const toggleFavorite = () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.5s ease;
+  transition: transform 0.5s;
 }
 
 .movie-card:hover .movie-card__poster {
@@ -225,27 +220,6 @@ const toggleFavorite = () => {
 @keyframes skeleton {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
-}
-
-.movie-card__overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
-  opacity: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.3s ease;
-}
-
-.movie-card:hover .movie-card__overlay {
-  opacity: 1;
-}
-
-.movie-card__play-icon {
-  font-size: 3.75rem;
-  color: #dc2626;
-  filter: drop-shadow(0 0 20px rgba(220, 38, 38, 0.8));
 }
 
 .movie-card__favorite {
@@ -325,30 +299,30 @@ const toggleFavorite = () => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
-
 .movie-card__meta {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
   margin-bottom: 0.75rem;
+  color: #9ca3af;
   font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.7);
 }
 
 .movie-card__year {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: 0.25rem;
 }
 
-.movie-card__votes {
-  font-size: 0.75rem;
+.movie-card__year svg {
+  width: 14px;
+  height: 14px;
 }
 
 .movie-card__overview {
-  color: rgba(255, 255, 255, 0.8);
+  color: #d1d5db;
   font-size: 0.875rem;
-  line-height: 1.6;
+  line-height: 1.5;
   margin-bottom: 1rem;
 }
 
@@ -359,11 +333,11 @@ const toggleFavorite = () => {
 }
 
 .movie-card__genre {
-  padding: 0.25rem 0.5rem;
-  background: rgba(220, 38, 38, 0.15);
-  border: 1px solid rgba(220, 38, 38, 0.3);
+  padding: 0.25rem 0.625rem;
+  background: rgba(139, 0, 0, 0.3);
+  border: 1px solid rgba(139, 0, 0, 0.5);
   border-radius: 0.25rem;
-  color: rgba(220, 38, 38, 0.9);
+  color: #fca5a5;
   font-size: 0.75rem;
   font-weight: 600;
 }

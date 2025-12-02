@@ -248,7 +248,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* Estilos permanecem iguais ao original */
 .series-view {
   min-height: 100vh;
   background: rgb(20, 20, 20);
@@ -260,7 +259,7 @@ onBeforeUnmount(() => {
   padding: 0 2rem;
 }
 
-/* HERO CAROUSEL */
+/* ==================== HERO CAROUSEL ==================== */
 .series-hero {
   position: relative;
   height: 70vh;
@@ -367,7 +366,7 @@ onBeforeUnmount(() => {
   background: rgba(255, 255, 255, 0.5);
 }
 
-/* FILTERS */
+/* ==================== FILTERS ==================== */
 .series-filters {
   background: rgba(20, 20, 20, 0.95);
   padding: 2rem 0;
@@ -416,18 +415,25 @@ onBeforeUnmount(() => {
 .series-filters__select:focus {
   outline: none;
   border-color: #dc2626;
-  box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
 }
 
-/* CONTENT */
+/* ==================== CONTENT ==================== */
 .series-content {
   padding: 4rem 0;
 }
 
 .series-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.2rem;
+  width: 100%;
+}
+
+.series-grid > * {
+  position: relative;
+  width: 100%;
+  height: auto;
 }
 
 .series-empty {
@@ -447,7 +453,7 @@ onBeforeUnmount(() => {
   font-size: 1.125rem;
 }
 
-/* LOAD MORE */
+/* ==================== LOAD MORE ==================== */
 .series-load-more {
   display: flex;
   justify-content: center;
@@ -456,7 +462,7 @@ onBeforeUnmount(() => {
 
 .series-load-more__btn {
   padding: 1rem 3rem;
-  background: #dc2626;
+  background: rgba(220, 38, 38, 0.9);
   border: 2px solid transparent;
   border-radius: 0.5rem;
   color: #fff;
@@ -467,10 +473,7 @@ onBeforeUnmount(() => {
 }
 
 .series-load-more__btn:hover:not(:disabled) {
-  background: #dc2626;
-  border-color: #dc2620;
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(220, 38, 38, 0.4);
 }
 
 .series-load-more__btn:disabled {
@@ -478,7 +481,7 @@ onBeforeUnmount(() => {
   cursor: not-allowed;
 }
 
-/* TRANSITIONS */
+/* ==================== TRANSITIONS ==================== */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 1s ease;
@@ -489,7 +492,13 @@ onBeforeUnmount(() => {
   opacity: 0;
 }
 
-/* RESPONSIVE */
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 1200px) {
+  .series-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 @media (max-width: 1024px) {
   .series-hero__title {
     font-size: 3.5rem;
@@ -539,8 +548,8 @@ onBeforeUnmount(() => {
   }
 
   .series-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
 }
 
@@ -557,6 +566,11 @@ onBeforeUnmount(() => {
   .series-hero__btn svg {
     width: 20px;
     height: 20px;
+  }
+
+  .series-grid {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 0.75rem;
   }
 }
 </style>

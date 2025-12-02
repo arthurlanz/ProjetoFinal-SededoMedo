@@ -597,6 +597,73 @@ onUnmounted(() => {
   font-size: 0.75rem;
   margin: 0;
 }
+/* ==================== SCROLL HORIZONTAL SEM BARRA ==================== */
+:deep(.row-carousel),
+:deep(.movie-row__carousel),
+:deep(.series-row__carousel) {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding: 1.5rem 4% 2rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+:deep(.row-carousel::-webkit-scrollbar),
+:deep(.movie-row__carousel::-webkit-scrollbar),
+:deep(.series-row__carousel::-webkit-scrollbar) {
+  display: none;
+}
+
+:deep(.row-carousel) {
+  cursor: grab;
+}
+
+:deep(.row-carousel:active) {
+  cursor: grabbing;
+}
+
+/* ==================== AUMENTAR CARDS E MOSTRAR MAIS ==================== */
+:deep(.movie-card),
+:deep(.series-card) {
+  min-width: 320px;
+  width: 320px;
+  flex-shrink: 0;
+}
+
+/* ==================== AJUSTES RESPONSIVOS ==================== */
+@media (max-width: 1400px) {
+  :deep(.movie-card),
+  :deep(.series-card) {
+    min-width: 280px;
+    width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  :deep(.movie-card),
+  :deep(.series-card) {
+    min-width: 240px;
+    width: 240px;
+  }
+
+  :deep(.row-carousel),
+  :deep(.movie-row__carousel),
+  :deep(.series-row__carousel) {
+    padding: 1rem 4% 1.5rem;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  :deep(.movie-card),
+  :deep(.series-card) {
+    min-width: 200px;
+    width: 200px;
+  }
+}
 
 /* ==================== TRANSITIONS ==================== */
 .fade-enter-active,
@@ -643,4 +710,5 @@ onUnmounted(() => {
     justify-content: center;
   }
 }
+
 </style>

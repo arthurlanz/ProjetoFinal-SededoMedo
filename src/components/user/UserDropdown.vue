@@ -101,7 +101,7 @@ onBeforeUnmount(() => {
   gap: 0.75rem;
   padding: 0.5rem 1rem;
   background: rgba(32, 31, 31, 0.8);
-  border: 1px solid rgba(220, 38, 38, 0.3);
+  border: transparent;
   border-radius: 0.5rem;
   color: white;
   cursor: pointer;
@@ -118,7 +118,6 @@ onBeforeUnmount(() => {
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #dc2626;
 }
 
 .user-dropdown__avatar-placeholder {

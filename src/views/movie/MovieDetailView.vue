@@ -47,7 +47,9 @@
                   @click="toggleFavorite(movie)"
                   class="movie-detail__btn-icon"
                   :class="{ 'movie-detail__btn-icon--active': isFavorite(movie.id) }"
-                  :title="isFavorite(movie.id) ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos'"
+                  :title="
+                    isFavorite(movie.id) ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos'
+                  "
                 >
                   <font-awesome-icon
                     :icon="isFavorite(movie.id) ? ['fas', 'heart'] : ['far', 'heart']"
@@ -71,10 +73,13 @@
               </div>
             </div>
 
-            <!-- Avaliar Filme -->
-            <div class="movie-detail__rating-box">
-              <h2 class="movie-detail__section-title">Avaliar Filme</h2>
-              <MovieRating :movie-id="movie.id" />
+            <div class="movie-detail__rating-section">
+              <MovieRating
+                :movie-id="movie.id"
+                media-type="movie"
+                :vote-average="movie.vote_average || 0"
+                :vote-count="movie.vote_count || 0"
+              />
             </div>
           </div>
 
@@ -92,7 +97,9 @@
             <div class="movie-detail__meta">
               <div class="movie-detail__meta-item">
                 <font-awesome-icon :icon="['fas', 'star']" />
-                <span class="movie-detail__rating">{{ movie.vote_average?.toFixed(1) || 'N/A' }}</span>
+                <span class="movie-detail__rating">{{
+                  movie.vote_average?.toFixed(1) || 'N/A'
+                }}</span>
                 <span class="movie-detail__votes">({{ formatVotes(movie.vote_count) }} votos)</span>
               </div>
 
@@ -114,11 +121,7 @@
 
             <!-- Genres -->
             <div class="movie-detail__genres">
-              <span
-                v-for="genre in movie.genres"
-                :key="genre.id"
-                class="movie-detail__genre"
-              >
+              <span v-for="genre in movie.genres" :key="genre.id" class="movie-detail__genre">
                 {{ genre.name }}
               </span>
             </div>
@@ -143,7 +146,10 @@
             </div>
 
             <!-- Production Companies -->
-            <div v-if="movie.production_companies && movie.production_companies.length" class="movie-detail__section">
+            <div
+              v-if="movie.production_companies && movie.production_companies.length"
+              class="movie-detail__section"
+            >
               <h2 class="movie-detail__section-title">Produtoras</h2>
               <div class="movie-detail__companies">
                 <div
@@ -199,7 +205,9 @@
                 </div>
                 <div class="movie-detail__stat-content">
                   <span class="movie-detail__stat-label">Idioma:</span>
-                  <span class="movie-detail__stat-value">{{ movie.original_language.toUpperCase() }}</span>
+                  <span class="movie-detail__stat-value">{{
+                    movie.original_language.toUpperCase()
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -308,7 +316,7 @@ const formatDate = (date) => {
   return new Date(date).toLocaleDateString('pt-BR', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 
@@ -329,12 +337,12 @@ const formatCurrency = (amount) => {
 
 const translateStatus = (status) => {
   const statusMap = {
-    'Released': 'Lançado',
+    Released: 'Lançado',
     'Post Production': 'Pós-Produção',
     'In Production': 'Em Produção',
-    'Planned': 'Planejado',
-    'Rumored': 'Rumores',
-    'Canceled': 'Cancelado',
+    Planned: 'Planejado',
+    Rumored: 'Rumores',
+    Canceled: 'Cancelado',
   }
   return statusMap[status] || status
 }
@@ -374,7 +382,7 @@ const shareMovie = async () => {
   const shareData = {
     title: movie.value.title,
     text: `Confira "${movie.value.title}" no Sede do Medo!`,
-    url: window.location.href
+    url: window.location.href,
   }
 
   try {
@@ -416,7 +424,7 @@ watch(
     if (route.name === 'movie-detail') {
       loadMovieData()
     }
-  }
+  },
 )
 
 onMounted(() => {
@@ -425,40 +433,64 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Reutilizar estilos do SeriesDetailView */
-.movie-detail {
-  min-height: 100vh;
+/* Todos os estilos anteriores permanecem iguais, apenas adicione: */
+
+/* Rating Section - NOVO */
+.movie-detail__rating-section {
+  margin-top: 1.5rem;
+}
+
+/* Remover a antiga .movie-detail__rating-box e substituir por: */
+.movie-detail__rating-section :deep(.movie-rating) {
+  margin: 0;
+}
+
+.movie-detail__rating-section :deep(.movie-rating__container) {
+  background: rgba(31, 41, 55, 0.5);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+
+/* Resto do CSS permanece igual */
+.movie-detail__content {
   background: rgb(20, 20, 20);
-  padding-bottom: 4rem;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
 }
 
 .movie-detail__hero {
   position: relative;
-  height: 70vh;
+  height: 80vh;
+  min-height: 500px;
   overflow: hidden;
+  margin-top: -70px;
+  margin-bottom: -250px;
 }
 
 .movie-detail__backdrop {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center top;
 }
 
 .movie-detail__backdrop-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    to top,
-    rgb(20, 20, 20) 0%,
-    rgba(20, 20, 20, 0.8) 50%,
-    transparent 100%
+    to bottom,
+    transparent 0%,
+    transparent 30%,
+    rgba(20, 20, 20, 0.3) 50%,
+    rgba(20, 20, 20, 0.8) 70%,
+    rgba(20, 20, 20, 0.95) 90%,
+    rgb(20, 20, 20) 100%
   );
-}
-
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 2rem;
 }
 
 .movie-detail__container {
@@ -574,15 +606,6 @@ onMounted(() => {
 .movie-detail__btn-icon--watchlist-active {
   background: #f59e0b;
   border-color: #f59e0b;
-}
-
-/* Rating Box */
-.movie-detail__rating-box {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Info Section */

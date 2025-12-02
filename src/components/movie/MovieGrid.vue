@@ -55,18 +55,16 @@ defineEmits(['load-more']);
 </script>
 
 <style scoped>
-/* ==================== CONTAINER PRINCIPAL ==================== */
 .movie-grid {
   width: 100%;
-  overflow: visible; /* ✅ Permite hover expandir */
-  padding: 4rem 0; /* ✅ Padding generoso */
+  overflow: visible;
+  padding: 2rem 0;
 }
 
-/* ==================== GRID E LIST ==================== */
 .movie-grid__container--grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 3rem 2rem; /* ✅ Gap vertical grande */
+  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+  gap: 2rem;
   overflow: visible;
   padding: 1rem 0;
 }
@@ -79,7 +77,6 @@ defineEmits(['load-more']);
   padding: 1rem 0;
 }
 
-/* ==================== EMPTY STATE ==================== */
 .movie-grid__empty {
   text-align: center;
   padding: 6rem 2rem;
@@ -105,7 +102,6 @@ defineEmits(['load-more']);
   color: #9ca3af;
 }
 
-/* ==================== LOAD MORE ==================== */
 .movie-grid__load-more {
   text-align: center;
   margin-top: 4rem;
@@ -137,22 +133,27 @@ defineEmits(['load-more']);
   transform: translateY(-1px);
 }
 
-/* ==================== RESPONSIVE ==================== */
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
   .movie-grid__container--grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 2rem 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  }
+}
+
+@media (max-width: 1024px) {
+  .movie-grid__container--grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
   }
 }
 
 @media (max-width: 768px) {
   .movie-grid {
-    padding: 2rem 0;
+    padding: 1.5rem 0;
   }
 
   .movie-grid__container--grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 1.5rem 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
   }
 
   .movie-grid__container--list {
@@ -179,8 +180,8 @@ defineEmits(['load-more']);
 
 @media (max-width: 480px) {
   .movie-grid__container--grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.75rem;
   }
 }
 </style>

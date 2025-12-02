@@ -47,7 +47,9 @@
                   @click="toggleFavorite(adaptedSeries)"
                   class="movie-detail__btn-icon"
                   :class="{ 'movie-detail__btn-icon--active': isFavorite(series.id) }"
-                  :title="isFavorite(series.id) ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos'"
+                  :title="
+                    isFavorite(series.id) ? 'Remover dos Favoritos' : 'Adicionar aos Favoritos'
+                  "
                 >
                   <font-awesome-icon
                     :icon="isFavorite(series.id) ? ['fas', 'heart'] : ['far', 'heart']"
@@ -71,10 +73,14 @@
               </div>
             </div>
 
-            <!-- Avaliar Série -->
             <div class="movie-detail__rating-box">
               <h2 class="movie-detail__section-title">Avaliar Série</h2>
-              <MovieRating :movie-id="series.id" />
+              <MovieRating
+                :movie-id="series.id"
+                media-type="tv"
+                :vote-average="series.vote_average || 0"
+                :vote-count="series.vote_count || 0"
+              />
             </div>
           </div>
 
@@ -92,8 +98,12 @@
             <div class="movie-detail__meta">
               <div class="movie-detail__meta-item">
                 <font-awesome-icon :icon="['fas', 'star']" />
-                <span class="movie-detail__rating">{{ series.vote_average?.toFixed(1) || 'N/A' }}</span>
-                <span class="movie-detail__votes">({{ formatVotes(series.vote_count) }} votos)</span>
+                <span class="movie-detail__rating">{{
+                  series.vote_average?.toFixed(1) || 'N/A'
+                }}</span>
+                <span class="movie-detail__votes"
+                  >({{ formatVotes(series.vote_count) }} votos)</span
+                >
               </div>
 
               <div v-if="series.first_air_date" class="movie-detail__meta-item">
@@ -103,15 +113,26 @@
 
               <div v-if="series.number_of_seasons" class="movie-detail__meta-item">
                 <font-awesome-icon :icon="['fas', 'film']" />
-                <span>{{ series.number_of_seasons }} temporada{{ series.number_of_seasons > 1 ? 's' : '' }}</span>
+                <span
+                  >{{ series.number_of_seasons }} temporada{{
+                    series.number_of_seasons > 1 ? 's' : ''
+                  }}</span
+                >
               </div>
 
               <div v-if="series.number_of_episodes" class="movie-detail__meta-item">
                 <font-awesome-icon :icon="['fas', 'tv']" />
-                <span>{{ series.number_of_episodes }} episódio{{ series.number_of_episodes > 1 ? 's' : '' }}</span>
+                <span
+                  >{{ series.number_of_episodes }} episódio{{
+                    series.number_of_episodes > 1 ? 's' : ''
+                  }}</span
+                >
               </div>
 
-              <div v-if="series.episode_run_time && series.episode_run_time.length" class="movie-detail__meta-item">
+              <div
+                v-if="series.episode_run_time && series.episode_run_time.length"
+                class="movie-detail__meta-item"
+              >
                 <font-awesome-icon :icon="['fas', 'clock']" />
                 <span>~{{ series.episode_run_time[0] }} min/ep</span>
               </div>
@@ -124,11 +145,7 @@
 
             <!-- Genres -->
             <div class="movie-detail__genres">
-              <span
-                v-for="genre in series.genres"
-                :key="genre.id"
-                class="movie-detail__genre"
-              >
+              <span v-for="genre in series.genres" :key="genre.id" class="movie-detail__genre">
                 {{ genre.name }}
               </span>
             </div>
@@ -145,7 +162,7 @@
             <div v-if="series.created_by && series.created_by.length" class="movie-detail__section">
               <h2 class="movie-detail__section-title">Criadores</h2>
               <p class="movie-detail__text">
-                {{ series.created_by.map(c => c.name).join(', ') }}
+                {{ series.created_by.map((c) => c.name).join(', ') }}
               </p>
             </div>
 
@@ -198,7 +215,7 @@
               <h2 class="movie-detail__section-title">Temporadas</h2>
               <div class="movie-detail__seasons">
                 <div
-                  v-for="season in series.seasons.filter(s => s.season_number > 0)"
+                  v-for="season in series.seasons.filter((s) => s.season_number > 0)"
                   :key="season.id"
                   class="movie-detail__season"
                 >
@@ -306,7 +323,7 @@ const formatDate = (date) => {
   return new Date(date).toLocaleDateString('pt-BR', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   })
 }
 
@@ -318,10 +335,10 @@ const formatYear = (date) => {
 const translateStatus = (status) => {
   const statusMap = {
     'Returning Series': 'Em exibição',
-    'Ended': 'Finalizada',
-    'Canceled': 'Cancelada',
+    Ended: 'Finalizada',
+    Canceled: 'Cancelada',
     'In Production': 'Em produção',
-    'Planned': 'Planejada',
+    Planned: 'Planejada',
   }
   return statusMap[status] || status
 }
@@ -336,7 +353,7 @@ const fetchSeriesDetails = async () => {
       api.get(`tv/${id}`, { params: { language: 'pt-BR' } }),
       api.get(`tv/${id}/credits`, { params: { language: 'pt-BR' } }),
       api.get(`tv/${id}/similar`, { params: { language: 'pt-BR' } }),
-      api.get(`tv/${id}/videos`, { params: { language: 'pt-BR' } })
+      api.get(`tv/${id}/videos`, { params: { language: 'pt-BR' } }),
     ])
 
     series.value = detailsRes.data
@@ -345,7 +362,7 @@ const fetchSeriesDetails = async () => {
 
     // Buscar trailer
     const videos = videosRes.data.results || []
-    const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube')
+    const trailer = videos.find((v) => v.type === 'Trailer' && v.site === 'YouTube')
     if (trailer) {
       series.value.trailer = trailer.key
     }
@@ -370,7 +387,7 @@ const shareSeries = async () => {
   const shareData = {
     title: series.value.name,
     text: `Confira "${series.value.name}" no Sede do Medo!`,
-    url: window.location.href
+    url: window.location.href,
   }
 
   try {

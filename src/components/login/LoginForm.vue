@@ -137,8 +137,8 @@ const continueAsGuest = () => {
 .login-form__container {
   width: 100%;
   max-width: 450px;
-  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-  border: 2px solid rgba(220, 38, 38, 0.3);
+  background: rgb(20, 20, 20);
+  border: 2px solid rgba(97, 97, 97, 0.3);
   border-radius: 1rem;
   padding: 3rem;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
@@ -169,7 +169,7 @@ const continueAsGuest = () => {
 }
 
 .login-form__title {
-  font-size: 2rem;
+  font-size: 1.9rem;
   font-weight: 900;
   color: #dc2626;
   margin-bottom: 0.5rem;
@@ -200,8 +200,7 @@ const continueAsGuest = () => {
 .login-form__input {
   width: 100%;
   padding: 0.875rem 1rem;
-  background: #111827;
-  border: 1px solid rgba(220, 38, 38, 0.3);
+  background: rgba(23, 30, 39, 0.5);
   border-radius: 0.5rem;
   color: white;
   font-size: 1rem;
@@ -210,8 +209,6 @@ const continueAsGuest = () => {
 
 .login-form__input:focus {
   outline: none;
-  border-color: #dc2626;
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
 }
 
 .login-form__input:disabled {
@@ -316,7 +313,6 @@ const continueAsGuest = () => {
 .login-form__footer {
   text-align: center;
   padding-top: 2rem;
-  border-top: 1px solid rgba(220, 38, 38, 0.2);
 }
 
 .login-form__footer p {

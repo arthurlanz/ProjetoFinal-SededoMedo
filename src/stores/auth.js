@@ -16,6 +16,8 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => state.isAuthenticated);
   const loading = computed(() => state.loading);
   const error = computed(() => state.error);
+  const sessionId = computed(() => state.sessionId);
+  const accountId = computed(() => state.user?.id);
 
   const createRequestToken = async () => {
     try {
@@ -121,7 +123,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       await fetchAccountDetails();
 
-      // 🆕 CARREGAR FAVORITOS DA API APÓS LOGIN
+      // Carregar favoritos da API após login
       console.log('✅ Login bem-sucedido! Carregando favoritos da API...');
       const { useFavoritesStore } = await import('@/stores/favorites');
       const favoritesStore = useFavoritesStore();
@@ -156,7 +158,7 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.removeItem('tmdb_session_id');
       localStorage.removeItem('tmdb_user');
 
-      // 🆕 LIMPAR TODOS OS FAVORITOS E HISTÓRICO DO NAVEGADOR
+      // Limpar todos os favoritos e histórico do navegador
       console.log('🧹 Limpando favoritos e histórico do navegador...');
       const { useFavoritesStore } = await import('@/stores/favorites');
       const favoritesStore = useFavoritesStore();
@@ -175,7 +177,7 @@ export const useAuthStore = defineStore('auth', () => {
         await fetchAccountDetails();
         state.isAuthenticated = true;
 
-        // 🆕 SINCRONIZAR FAVORITOS AO RESTAURAR SESSÃO
+        // Sincronizar favoritos ao restaurar sessão
         const { useFavoritesStore } = await import('@/stores/favorites');
         const favoritesStore = useFavoritesStore();
         await favoritesStore.loadFromTMDB();
@@ -265,13 +267,20 @@ export const useAuthStore = defineStore('auth', () => {
         })
       ])
 
-      // Combinar filmes e séries, adaptando séries para formato de filme
-      const movies = moviesResponse.data.results
-      const series = tvResponse.data.results.map(show => ({
+      // ✅ CORREÇÃO: Adicionar media_type nos filmes também
+      const movies = (moviesResponse.data.results || []).map(movie => ({
+        ...movie,
+        media_type: 'movie',
+        title: movie.title,
+        release_date: movie.release_date,
+      }))
+
+      // ✅ Formatar séries
+      const series = (tvResponse.data.results || []).map(show => ({
         ...show,
+        media_type: 'tv',
         title: show.name,
         release_date: show.first_air_date,
-        media_type: 'tv'
       }))
 
       const allItems = [...movies, ...series]
@@ -312,6 +321,41 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (err) {
       console.error('❌ Erro ao atualizar watchlist:', err)
       return false
+    }
+  };
+
+  // ✅ NOVA FUNÇÃO: Remover da watchlist
+  const removeFromWatchlist = async (itemId, mediaType = 'movie') => {
+    try {
+      const currentSessionId = state.sessionId || localStorage.getItem('tmdb_session_id')
+
+      if (!currentSessionId || !state.user?.id) {
+        throw new Error('Sessão inválida')
+      }
+
+      const response = await api.post(
+        `account/${state.user.id}/watchlist`,
+        {
+          media_type: mediaType,
+          media_id: itemId,
+          watchlist: false,
+        },
+        {
+          params: {
+            session_id: currentSessionId,
+          },
+        }
+      )
+
+      if (response.data.success) {
+        console.log(`✅ Item ${itemId} (${mediaType}) removido da watchlist`)
+        return true
+      }
+
+      return false
+    } catch (error) {
+      console.error('❌ Erro ao remover da watchlist:', error)
+      throw error
     }
   };
 
@@ -370,6 +414,8 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     loading,
     error,
+    sessionId,        // ✅ Adicionado
+    accountId,        // ✅ Adicionado
     login,
     logout,
     restoreSession,
@@ -377,6 +423,7 @@ export const useAuthStore = defineStore('auth', () => {
     toggleFavoriteTMDB,
     getWatchlist,
     toggleWatchlist,
+    removeFromWatchlist,  // ✅ Adicionado
     rateMovie,
     deleteRating,
     getRatedMovies,
