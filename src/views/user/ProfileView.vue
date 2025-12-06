@@ -52,7 +52,7 @@
           </div>
           <div class="profile-view__stat-info">
             <span class="profile-view__stat-value">{{ ratedMovies.length }}</span>
-            <span class="profile-view__stat-label">Avaliações</span>
+            <span class="profile-view__stat-label" >Avaliações</span>
           </div>
         </div>
 
@@ -167,10 +167,16 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.profile-view {
+  min-height: 100vh;
+  background: rgb(20, 20, 20);
+  padding: 4rem 0 4rem;
+}
+
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
+  padding: 0 4%;
 }
 
 .profile-view__header {
@@ -195,7 +201,7 @@ onMounted(async () => {
   height: 100px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #dc2626;
+  border: transparent;
   box-shadow: 0 0 30px rgba(220, 38, 38, 0.5);
 }
 
@@ -269,15 +275,15 @@ onMounted(async () => {
   align-items: center;
   gap: 1rem;
   padding: 1.5rem;
-  background: rgba(31, 41, 55, 0.5);
-  border: 1px solid rgba(220, 38, 38, 0.3);
+  background: rgba(63, 63, 63, 0.315);
+  border: transparent;
   border-radius: 0.75rem;
   transition: all 0.3s ease;
 }
 
 .profile-view__stat:hover {
   border-color: #dc2626;
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
 
 .profile-view__stat-icon {

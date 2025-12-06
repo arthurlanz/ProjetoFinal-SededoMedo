@@ -2,18 +2,27 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import router from './router'
 import App from './App.vue'
-import VueLazyLoad from 'vue3-lazyload' // ADICIONE ESTA LINHA
+import VueLazyLoad from 'vue3-lazyload'
 import './assets/main.css'
+
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { fas } from '@fortawesome/free-solid-svg-icons'
+import { fab } from '@fortawesome/free-brands-svg-icons'
+import { far } from '@fortawesome/free-regular-svg-icons'
+
+library.add(fas, fab, far)
 
 const app = createApp(App)
 const pinia = createPinia()
 
+app.component('font-awesome-icon', FontAwesomeIcon)
+
 app.use(pinia)
 app.use(router)
-app.use(VueLazyLoad) // ADICIONE ESSA LINHA
+app.use(VueLazyLoad, {
+  loading: '',
+  error: ''
+})
 
 app.mount('#app')
-app.use(VueLazyLoad, {
-  loading: 'URL_DA_IMAGEM_LOADING',
-  error: 'URL_DA_IMAGEM_ERRO'
-})

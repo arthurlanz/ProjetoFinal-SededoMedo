@@ -6,56 +6,55 @@
   >
     <div class="movie-card__poster-wrapper">
       <img
-        v-if="movie.poster_path"
-        v-lazy="getPosterUrl(movie.poster_path)"
-        :alt="movie.title"
+        v-if="series.poster_path"
+        v-lazy="getPosterUrl(series.poster_path)"
+        :alt="series.name"
         class="movie-card__poster"
         @load="onImageLoad"
         @error="onImageError"
       />
       <div v-else class="movie-card__poster-placeholder">
-        <font-awesome-icon :icon="['fas', 'film']" />
+        <font-awesome-icon :icon="['fas', 'tv']" />
       </div>
-
-      <div v-if="!imageLoaded && movie.poster_path" class="movie-card__skeleton"></div>
+      <div v-if="!imageLoaded && series.poster_path" class="movie-card__skeleton"></div>
       <button
         @click.stop="toggleFavorite"
         class="movie-card__favorite"
-        :class="{ 'movie-card__favorite--active': isFavorite(movie.id) }"
+        :class="{ 'movie-card__favorite--active': isFavorite(series.id) }"
         type="button"
       >
         <font-awesome-icon
-          :icon="isFavorite(movie.id) ? ['fas', 'heart'] : ['far', 'heart']"
+          :icon="isFavorite(series.id) ? ['fas', 'heart'] : ['far', 'heart']"
         />
       </button>
 
-      <div v-if="movie.vote_average" class="movie-card__rating">
+      <div v-if="series.vote_average" class="movie-card__rating">
         <font-awesome-icon :icon="['fas', 'star']" />
-        <span>{{ formatRating(movie.vote_average) }}</span>
+        <span>{{ formatRating(series.vote_average) }}</span>
       </div>
     </div>
 
     <div class="movie-card__content">
-      <h3 class="movie-card__title">{{ movie.title }}</h3>
+      <h3 class="movie-card__title">{{ series.name }}</h3>
 
       <div class="movie-card__meta">
-        <span v-if="movie.release_date" class="movie-card__year">
+        <span v-if="series.first_air_date" class="movie-card__year">
           <font-awesome-icon :icon="['fas', 'calendar']" />
-          {{ getYear(movie.release_date) }}
+          {{ getYear(series.first_air_date) }}
         </span>
 
-        <span v-if="movie.vote_count" class="movie-card__votes">
-          {{ formatVotes(movie.vote_count) }} avaliações
+        <span v-if="series.vote_count" class="movie-card__votes">
+          {{ formatVotes(series.vote_count) }} avaliações
         </span>
       </div>
 
-      <p v-if="viewMode === 'list' && movie.overview" class="movie-card__overview">
-        {{ truncateText(movie.overview, 150) }}
+      <p v-if="viewMode === 'list' && series.overview" class="movie-card__overview">
+        {{ truncateText(series.overview, 150) }}
       </p>
 
       <div class="movie-card__genres">
         <span
-          v-for="genreId in movie.genre_ids.slice(0, 3)"
+          v-for="genreId in series.genre_ids?.slice(0, 3)"
           :key="genreId"
           class="movie-card__genre"
         >
@@ -67,14 +66,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useGenreStore } from '@/stores/genre';
-import { useFavorites } from '@/composables/useFavorites';
-import { getImageUrl } from '@/plugins/axios';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useGenreStore } from '@/stores/genre'
+import { useFavorites } from '@/composables/useFavorites'
+import { getImageUrl } from '@/plugins/axios'
 
 const props = defineProps({
-  movie: {
+  series: {
     type: Object,
     required: true,
   },
@@ -82,62 +81,68 @@ const props = defineProps({
     type: String,
     default: 'grid',
   },
-});
+})
 
-const router = useRouter();
-const genreStore = useGenreStore();
-const { isFavorite, toggleFavorite: toggleFav } = useFavorites();
+const router = useRouter()
+const genreStore = useGenreStore()
+const { isFavorite, toggleFavorite: toggleFav } = useFavorites()
 
-const imageLoaded = ref(false);
-const imageError = ref(false);
+const imageLoaded = ref(false)
+const imageError = ref(false)
 
 const getPosterUrl = (path) => {
-  return getImageUrl(path, 'w500');
-};
+  return getImageUrl(path, 'w500')
+}
 
 const onImageLoad = () => {
-  imageLoaded.value = true;
-};
+  imageLoaded.value = true
+}
 
 const onImageError = () => {
-  imageError.value = true;
-};
+  imageError.value = true
+}
 
 const getGenreName = (id) => {
   try {
-    return genreStore.getGenreName(id);
+    return genreStore.getGenreName(id)
   } catch {
-    return '';
+    return ''
   }
-};
+}
 
 const getYear = (date) => {
-  return new Date(date).getFullYear();
-};
+  return new Date(date).getFullYear()
+}
 
 const formatRating = (rating) => {
-  return rating.toFixed(1);
-};
+  return rating.toFixed(1)
+}
 
 const formatVotes = (votes) => {
   if (votes >= 1000) {
-    return `${(votes / 1000).toFixed(1)}k`;
+    return `${(votes / 1000).toFixed(1)}k`
   }
-  return votes;
-};
+  return votes
+}
 
 const truncateText = (text, length) => {
-  if (text.length <= length) return text;
-  return text.substring(0, length) + '...';
-};
+  if (text.length <= length) return text
+  return text.substring(0, length) + '...'
+}
 
 const goToDetail = () => {
-  router.push({ name: 'movie-detail', params: { id: props.movie.id } });
-};
+  router.push({ name: 'series-detail', params: { id: props.series.id } })
+}
 
 const toggleFavorite = () => {
-  toggleFav(props.movie);
-};
+  // Adaptar série para formato de filme
+  const adapted = {
+    ...props.series,
+    title: props.series.name,
+    release_date: props.series.first_air_date,
+  }
+  toggleFav(adapted)
+}
 </script>
 
 <style scoped>
